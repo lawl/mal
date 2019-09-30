@@ -183,7 +183,7 @@ scheme_STEP_TO_PROG_cyclone     = scheme/$($(1))
 scheme_STEP_TO_PROG_foment      = scheme/$($(1)).scm
 
 # Map of step (e.g. "step8") to executable file for that step
-mygo_STEP_TO_PROG =    mygo/$($(1)).go
+mygo_STEP_TO_PROG =    mygo/$($(1))/$($(1)).go
 ada_STEP_TO_PROG =     ada/$($(1))
 ada.2_STEP_TO_PROG =   ada.2/$($(1))
 awk_STEP_TO_PROG =     awk/$($(1)).awk

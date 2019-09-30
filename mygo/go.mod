@@ -1,3 +1,3 @@
-module mal
+module mygomal
 
 go 1.13

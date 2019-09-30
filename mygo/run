@@ -1,2 +1,2 @@
 #!/bin/bash
-exec go run $(dirname $0)/${STEP:-stepA_mal}.go "${@}"
+exec go run $(dirname $0)/$STEP/${STEP:-stepA_mal}.go "${@}"
