@@ -94,7 +94,7 @@ IMPLS = ada ada.2 awk bash basic bbc-basic c chuck clojure coffee common-lisp cp
 	guile haskell haxe hy io java js julia kotlin livescript logo lua make mal \
 	matlab miniMAL nasm nim objc objpascal ocaml perl perl6 php picolisp pike plpgsql \
 	plsql powershell ps python r racket rexx rpython ruby rust scala scheme skew \
-	swift swift3 swift4 tcl ts vala vb vhdl vimscript wasm yorick
+	swift swift3 swift4 tcl ts vala vb vhdl vimscript wasm yorick mygo
 
 EXTENSION = .mal
 
@@ -183,6 +183,7 @@ scheme_STEP_TO_PROG_cyclone     = scheme/$($(1))
 scheme_STEP_TO_PROG_foment      = scheme/$($(1)).scm
 
 # Map of step (e.g. "step8") to executable file for that step
+mygo_STEP_TO_PROG =    mygo/$($(1)).go
 ada_STEP_TO_PROG =     ada/$($(1))
 ada.2_STEP_TO_PROG =   ada.2/$($(1))
 awk_STEP_TO_PROG =     awk/$($(1)).awk
