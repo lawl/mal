@@ -19,7 +19,7 @@ func setBindingInEnv(env *mal.Env, binding []mal.Type) (mal.Type, error) {
 	//1 argument to def! must be a symbol
 	symbolName, ok := binding[0].(*mal.Symbol)
 	if !ok {
-		return nil, fmt.Errorf("first paramter must be of type Symbol")
+		return nil, fmt.Errorf("first paramter must be of type Symbol, got %T", binding[0])
 	}
 	ev, err := eval(binding[1], env)
 	if err != nil {
