@@ -3,6 +3,7 @@ package mal
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 )
 
 //Reader reads lisp for tokenization and parsing
@@ -34,7 +35,7 @@ func NewReader(toks []string) *Reader {
 }
 
 //ReadStr parses a given string into an AST
-func ReadStr(s string) (MalType, error) {
+func ReadStr(s string) (Type, error) {
 	toks := tokenize(s)
 	reader := NewReader(toks)
 	return readForm(reader)
@@ -55,7 +56,7 @@ func tokenize(s string) []string {
 	return res
 }
 
-func readForm(reader *Reader) (MalType, error) {
+func readForm(reader *Reader) (Type, error) {
 	p, eof := reader.peek()
 
 	if eof {
@@ -79,8 +80,8 @@ func readForm(reader *Reader) (MalType, error) {
 	}
 }
 
-func readList(reader *Reader) (MalType, error) {
-	var list MalList
+func readList(reader *Reader) (Type, error) {
+	var list List
 	for {
 		peek, eof := reader.peek()
 		if peek != ")" && !eof {
@@ -99,10 +100,15 @@ func readList(reader *Reader) (MalType, error) {
 	}
 }
 
-func readAtom(reader *Reader) (MalType, error) {
+func readAtom(reader *Reader) (Type, error) {
 	val, eof := reader.next()
 	if eof {
 		return nil, fmt.Errorf("Tried to read atom, but reached EOF")
 	}
-	return &MalSymbol{value: val}, nil
+
+	if asNumber, err := strconv.ParseFloat(val, 64); err == nil {
+		return &Number{value: asNumber}, nil
+	}
+
+	return &Symbol{value: val}, nil
 }

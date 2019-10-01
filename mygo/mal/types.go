@@ -1,20 +1,20 @@
 package mal
 
-//MalType is the 'parent' for all Mal data structures. E.g. List, Atom, etc
-type MalType interface {
+//Type is the 'parent' for all Mal data structures. E.g. List, Atom, etc
+type Type interface {
 }
 
-//MalList holds a list of MalTypes
-type MalList struct {
-	value []MalType
+//List holds a list of MalTypes
+type List struct {
+	value []Type
 }
 
-//MalSymbol holds a symbol
-type MalSymbol struct {
+//Symbol holds a symbol
+type Symbol struct {
 	value string
 }
 
-//MalInteger holds an integer
-type MalInteger struct {
-	value int
+//Number holds an number, represented as a float64
+type Number struct {
+	value float64
 }
