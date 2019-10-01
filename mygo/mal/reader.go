@@ -89,7 +89,7 @@ func readList(reader *Reader) (Type, error) {
 			if err != nil {
 				return nil, err
 			}
-			list.value = append(list.value, v)
+			list.Value = append(list.Value, v)
 		} else if eof {
 			return nil, fmt.Errorf("unbalanced parenthesis")
 		} else {
@@ -107,8 +107,8 @@ func readAtom(reader *Reader) (Type, error) {
 	}
 
 	if asNumber, err := strconv.ParseFloat(val, 64); err == nil {
-		return &Number{value: asNumber}, nil
+		return &Number{Value: asNumber}, nil
 	}
 
-	return &Symbol{value: val}, nil
+	return &Symbol{Value: val}, nil
 }

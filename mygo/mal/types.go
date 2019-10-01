@@ -6,15 +6,20 @@ type Type interface {
 
 //List holds a list of MalTypes
 type List struct {
-	value []Type
+	Value []Type
 }
 
 //Symbol holds a symbol
 type Symbol struct {
-	value string
+	Value string
 }
 
 //Number holds an number, represented as a float64
 type Number struct {
-	value float64
+	Value float64
+}
+
+//Function holds a function
+type Function struct {
+	Value func(args ...Type) Type
 }

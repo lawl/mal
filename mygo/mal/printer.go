@@ -12,9 +12,9 @@ func PrString(ast Type) string {
 	switch v := ast.(type) {
 	case *List:
 		sb.WriteString("(")
-		for i, vel := range v.value {
+		for i, vel := range v.Value {
 			sb.WriteString(printAtom(vel))
-			if i < len(v.value)-1 {
+			if i < len(v.Value)-1 {
 				sb.WriteString(" ")
 			}
 		}
@@ -29,14 +29,14 @@ func PrString(ast Type) string {
 func printAtom(atom Type) string {
 	switch v := atom.(type) {
 	case *Symbol:
-		return v.value
+		return v.Value
 	case *Number:
 		// format the float as a string, g as parameter means:
 		// see https://golang.org/pkg/strconv/#FormatFloat
 		// g' ('e' for large exponents, 'f' otherwise)
 		//  'e' (-d.dddde±dd, a decimal exponent)
 		//  'f' (-ddd.dddd, no exponent)
-		return strconv.FormatFloat(v.value, 'g', -1, 64)
+		return strconv.FormatFloat(v.Value, 'g', -1, 64)
 	case *List:
 		return PrString(v)
 
