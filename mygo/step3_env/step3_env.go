@@ -1,10 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"mygomal/mal"
 	"os"
+
+	"github.com/chzyer/readline"
 )
 
 func read(s string) (mal.Type, error) {
@@ -144,11 +145,29 @@ func rep(s string, env *mal.Env) {
 }
 
 func main() {
-	stdin := bufio.NewReader(os.Stdin)
+	//stdin := bufio.NewReader(os.Stdin)
 	env := createREPLEnv()
+
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:          "user> ",
+		HistoryFile:     "/tmp/readline.tmp",
+		AutoComplete:    nil,
+		InterruptPrompt: "^C",
+		//EOFPrompt:       "exit",
+
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+
 	for {
 		fmt.Print("user> ")
-		s, _ := stdin.ReadString('\n')
+		s, err := l.Readline()
+		if err != nil {
+			break
+		}
 		rep(s, env)
 	}
 }
