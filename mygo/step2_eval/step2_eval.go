@@ -15,35 +15,46 @@ func read(s string) (mal.Type, error) {
 	return ast, nil
 }
 
-func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) mal.Type {
+func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (mal.Type, error) {
 	switch v := ast.(type) {
 	case *mal.List:
 		if len(v.Value) == 0 {
-			return ast
+			return ast, nil
 		}
-		ev := evalAst(v, replEnv)
+		ev, err := evalAst(v, replEnv)
+		if err != nil {
+			return nil, err
+		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...)
+		return fn.Value(lst.Value[1:]...), nil
 
 	default:
 		return evalAst(v, replEnv)
 	}
 }
 
-func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) mal.Type {
+func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (mal.Type, error) {
 	switch v := ast.(type) {
 	case *mal.Symbol:
 		//TODO could be a variable too, probably wrong. fix later
-		return &mal.Function{Value: replEnv[v.Value]}
+		fn, ok := replEnv[v.Value]
+		if !ok {
+			return nil, fmt.Errorf("Unknown symbol '%s'", v.Value)
+		}
+		return &mal.Function{Value: fn}, nil
 	case *mal.List:
 		var list mal.List
 		for _, val := range v.Value {
-			list.Value = append(list.Value, eval(val, replEnv))
+			evaled, err := eval(val, replEnv)
+			if err != nil {
+				return nil, err
+			}
+			list.Value = append(list.Value, evaled)
 		}
-		return &list
+		return &list, nil
 	default:
-		return ast
+		return ast, nil
 	}
 }
 
@@ -78,10 +89,14 @@ func rep(s string) {
 
 	ast, err := read(s)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Println(os.Stderr, err.Error())
 		return
 	}
-	expr := eval(ast, replEnv)
+	expr, err := eval(ast, replEnv)
+	if err != nil {
+		fmt.Println(os.Stderr, err.Error())
+		return
+	}
 	print(expr)
 }
 
