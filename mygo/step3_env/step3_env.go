@@ -145,15 +145,12 @@ func rep(s string, env *mal.Env) {
 }
 
 func main() {
-	//stdin := bufio.NewReader(os.Stdin)
 	env := createREPLEnv()
 
 	l, err := readline.NewEx(&readline.Config{
-		Prompt:          "user> ",
-		HistoryFile:     "/tmp/readline.tmp",
-		AutoComplete:    nil,
-		InterruptPrompt: "^C",
-		//EOFPrompt:       "exit",
+		Prompt:       "user> ",
+		HistoryFile:  "/tmp/readline.tmp",
+		AutoComplete: nil,
 
 		HistorySearchFold: true,
 	})
@@ -163,9 +160,8 @@ func main() {
 	defer l.Close()
 
 	for {
-		fmt.Print("user> ")
 		s, err := l.Readline()
-		if err != nil {
+		if err != nil { // io.EOF
 			break
 		}
 		rep(s, env)

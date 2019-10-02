@@ -110,5 +110,14 @@ func readAtom(reader *Reader) (Type, error) {
 		return &Number{Value: asNumber}, nil
 	}
 
+	switch val {
+	case "true":
+		return &Boolean{Value: true}, nil
+	case "false":
+		return &Boolean{Value: false}, nil
+	case "nil":
+		return &Nil{}, nil
+	}
+
 	return &Symbol{Value: val}, nil
 }

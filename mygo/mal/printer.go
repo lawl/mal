@@ -39,6 +39,13 @@ func printAtom(atom Type) string {
 		return strconv.FormatFloat(v.Value, 'g', -1, 64)
 	case *List:
 		return PrString(v)
+	case *Boolean:
+		if v.Value {
+			return "true"
+		}
+		return "false"
+	case *Nil:
+		return "nil"
 
 	default:
 		return "<TO STRING NOT IMPLEMENTED>"

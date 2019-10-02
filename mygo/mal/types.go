@@ -23,3 +23,12 @@ type Number struct {
 type Function struct {
 	Value func(args ...Type) Type
 }
+
+//Boolean holds a boolean
+type Boolean struct {
+	Value bool
+}
+
+//Nil is nil
+type Nil struct {
+}
