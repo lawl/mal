@@ -94,6 +94,17 @@ var CoreNS = map[*Symbol]*Function{
 		}
 		return &String{Value: sb.String()}, nil
 	}},
+	&Symbol{Value: "prn"}: &Function{Value: func(args ...Type) (Type, error) {
+		var sb strings.Builder
+		for i, v := range args {
+			sb.WriteString(PrString(v, true))
+			if i < len(args)-1 {
+				sb.WriteString(" ")
+			}
+		}
+		fmt.Println(sb.String())
+		return &Nil{}, nil
+	}},
 
 	// compare the first two parameters and return true if they are the same type and
 	// contain the same value. In the case of equal length lists, each element of the

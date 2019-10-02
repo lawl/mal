@@ -67,7 +67,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 				var lastResult mal.Type
 				for _, val := range v.Value[1:] {
 					var err error
-					lastResult, err = evalAst(val, env)
+					lastResult, err = eval(val, env)
 					if err != nil {
 						return nil, err
 					}
@@ -161,7 +161,7 @@ func createREPLEnv() *mal.Env {
 	return replEnv
 }
 
-func rep(s string, env *mal.Env) {
+func rep(s string, env *mal.Env, doPrint bool) {
 
 	ast, err := read(s)
 	if err != nil {
@@ -173,7 +173,9 @@ func rep(s string, env *mal.Env) {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	print(expr)
+	if doPrint {
+		print(expr)
+	}
 }
 
 func main() {
@@ -181,7 +183,7 @@ func main() {
 	flag.Parse()
 
 	env := createREPLEnv()
-	rep("(def! not (fn* (a) (if a false true)))", env)
+	rep("(def! not (fn* (a) (if a false true)))", env, false)
 
 	if *usePlainStdin {
 		stdinREPL(env)
@@ -195,7 +197,7 @@ func stdinREPL(env *mal.Env) {
 	for {
 		fmt.Print("user> ")
 		s, _ := stdin.ReadString('\n')
-		rep(s, env)
+		rep(s, env, true)
 	}
 }
 
@@ -218,6 +220,6 @@ func niceRepl(env *mal.Env) {
 		if err != nil { // io.EOF
 			break
 		}
-		rep(s, env)
+		rep(s, env, true)
 	}
 }
