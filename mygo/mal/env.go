@@ -7,8 +7,14 @@ type Env struct {
 }
 
 //NewEnv creates a new lisp parameter, taking a pointer to an outer environment, or nil, if none
-func NewEnv(outer *Env) *Env {
-	return &Env{outer: outer, data: make(map[string]Type)}
+func NewEnv(outer *Env, binds *[]*Symbol, exprs *[]*Type) *Env {
+	env := Env{outer: outer, data: make(map[string]Type)}
+	if binds != nil && exprs != nil {
+		for i := range *binds {
+			env.Set((*binds)[i], (*exprs)[i])
+		}
+	}
+	return &env
 }
 
 //Set sets a value in the environment

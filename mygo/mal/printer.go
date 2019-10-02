@@ -46,6 +46,8 @@ func printAtom(atom Type) string {
 		return "false"
 	case *Nil:
 		return "nil"
+	case *Function:
+		return "#<function>"
 
 	default:
 		return "<TO STRING NOT IMPLEMENTED>"

@@ -48,7 +48,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 				}
 				return setBindingInEnv(env, v.Value[1:])
 			case "let*":
-				newEnv := mal.NewEnv(env)
+				newEnv := mal.NewEnv(env, nil, nil)
 				if len(v.Value) < 3 {
 					return nil, fmt.Errorf("'let*' expects at least 2 paramters")
 				}
@@ -61,6 +61,16 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					return eval(v.Value[2], newEnv)
 				}
 				return nil, fmt.Errorf("'let!': invalid arguments")
+			case "do":
+				var lastResult mal.Type
+				for _, val := range v.Value[1:] {
+					var err error
+					lastResult, err = evalAst(val, env)
+					if err != nil {
+						return nil, err
+					}
+				}
+				return lastResult, nil
 			}
 		}
 
@@ -105,7 +115,7 @@ func print(ast mal.Type) {
 }
 
 func createREPLEnv() *mal.Env {
-	replEnv := mal.NewEnv(nil)
+	replEnv := mal.NewEnv(nil, nil, nil)
 	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Value: func(args ...mal.Type) mal.Type {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
