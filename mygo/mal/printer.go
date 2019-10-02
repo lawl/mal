@@ -55,8 +55,9 @@ func printAtom(atom Type, readably bool) string {
 			s = strings.ReplaceAll(s, "\\", "\\\\")
 			s = strings.ReplaceAll(s, "\"", "\\\"")
 			s = strings.ReplaceAll(s, "\n", "\\n")
+			s = "\"" + s + "\""
 		}
-		return "\"" + s + "\""
+		return s
 
 	default:
 		return fmt.Sprintf("<No print implementation for atom type: %T>", atom)
