@@ -115,6 +115,9 @@ func compareFunc(args ...Type) (Type, error) {
 		return &Boolean{Value: true}, nil
 	case *Function:
 		return &Boolean{Value: false}, nil // Go cant == functions, false seems to make the most sense
+	case *String:
+		v2, _ := args[1].(*String)
+		return &Boolean{Value: v.Value == v2.Value}, nil
 
 	default:
 		return nil, fmt.Errorf("No equals operation implemented for type: %T", v)

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"mygomal/mal"
 	"os"
@@ -48,7 +50,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 				}
 				return setBindingInEnv(env, v.Value[1:])
 			case "let*":
-				newEnv := mal.NewEnv(env)
+				newEnv := mal.NewEnv(env, nil, nil)
 				if len(v.Value) < 3 {
 					return nil, fmt.Errorf("'let*' expects at least 2 paramters")
 				}
@@ -70,7 +72,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...), nil
+		return fn.Value(lst.Value[1:]...)
 
 	default:
 		return evalAst(v, env)
@@ -101,30 +103,30 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 }
 
 func print(ast mal.Type) {
-	fmt.Println(mal.PrString(ast))
+	fmt.Println(mal.PrString(ast, true))
 }
 
 func createREPLEnv() *mal.Env {
-	replEnv := mal.NewEnv(nil)
-	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Value: func(args ...mal.Type) mal.Type {
+	replEnv := mal.NewEnv(nil, nil, nil)
+	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value + b.Value}
+		return &mal.Number{Value: a.Value + b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "-"}, &mal.Function{Value: func(args ...mal.Type) mal.Type {
+	replEnv.Set(&mal.Symbol{Value: "-"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value - b.Value}
+		return &mal.Number{Value: a.Value - b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "*"}, &mal.Function{Value: func(args ...mal.Type) mal.Type {
+	replEnv.Set(&mal.Symbol{Value: "*"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value * b.Value}
+		return &mal.Number{Value: a.Value * b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "/"}, &mal.Function{Value: func(args ...mal.Type) mal.Type {
+	replEnv.Set(&mal.Symbol{Value: "/"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value / b.Value}
+		return &mal.Number{Value: a.Value / b.Value}, nil
 	}})
 	return replEnv
 }
@@ -145,7 +147,28 @@ func rep(s string, env *mal.Env) {
 }
 
 func main() {
+	usePlainStdin := flag.Bool("stdin", false, "don't use nice readline based repl. only for tests, as the nice repl breaks them")
+	flag.Parse()
+
 	env := createREPLEnv()
+
+	if *usePlainStdin {
+		stdinREPL(env)
+		return
+	}
+	niceRepl(env)
+}
+
+func stdinREPL(env *mal.Env) {
+	stdin := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("user> ")
+		s, _ := stdin.ReadString('\n')
+		rep(s, env)
+	}
+}
+
+func niceRepl(env *mal.Env) {
 
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:       "user> ",

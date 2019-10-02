@@ -15,7 +15,7 @@ func read(s string) (mal.Type, error) {
 	return ast, nil
 }
 
-func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (mal.Type, error) {
+func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, error)) (mal.Type, error) {
 	switch v := ast.(type) {
 	case *mal.List:
 		if len(v.Value) == 0 {
@@ -27,14 +27,14 @@ func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (mal
 		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...), nil
+		return fn.Value(lst.Value[1:]...)
 
 	default:
 		return evalAst(v, replEnv)
 	}
 }
 
-func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (mal.Type, error) {
+func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, error)) (mal.Type, error) {
 	switch v := ast.(type) {
 	case *mal.Symbol:
 		//TODO could be a variable too, probably wrong. fix later
@@ -59,31 +59,31 @@ func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) mal.Type) (
 }
 
 func print(ast mal.Type) {
-	fmt.Println(mal.PrString(ast))
+	fmt.Println(mal.PrString(ast, true))
 }
 
 func rep(s string) {
 
-	replEnv := map[string]func(args ...mal.Type) mal.Type{
-		"+": func(args ...mal.Type) mal.Type {
+	replEnv := map[string]func(args ...mal.Type) (mal.Type, error){
+		"+": func(args ...mal.Type) (mal.Type, error) {
 			a, _ := args[0].(*mal.Number)
 			b, _ := args[1].(*mal.Number)
-			return &mal.Number{Value: a.Value + b.Value}
+			return &mal.Number{Value: a.Value + b.Value}, nil
 		},
-		"-": func(args ...mal.Type) mal.Type {
+		"-": func(args ...mal.Type) (mal.Type, error) {
 			a, _ := args[0].(*mal.Number)
 			b, _ := args[1].(*mal.Number)
-			return &mal.Number{Value: a.Value - b.Value}
+			return &mal.Number{Value: a.Value - b.Value}, nil
 		},
-		"*": func(args ...mal.Type) mal.Type {
+		"*": func(args ...mal.Type) (mal.Type, error) {
 			a, _ := args[0].(*mal.Number)
 			b, _ := args[1].(*mal.Number)
-			return &mal.Number{Value: a.Value * b.Value}
+			return &mal.Number{Value: a.Value * b.Value}, nil
 		},
-		"/": func(args ...mal.Type) mal.Type {
+		"/": func(args ...mal.Type) (mal.Type, error) {
 			a, _ := args[0].(*mal.Number)
 			b, _ := args[1].(*mal.Number)
-			return &mal.Number{Value: a.Value / b.Value}
+			return &mal.Number{Value: a.Value / b.Value}, nil
 		},
 	}
 

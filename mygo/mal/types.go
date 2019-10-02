@@ -32,3 +32,8 @@ type Boolean struct {
 //Nil is nil
 type Nil struct {
 }
+
+//String holds, perhaps unexpectedly a string
+type String struct {
+	Value string
+}

@@ -25,7 +25,7 @@ func rep(s string) {
 		fmt.Fprintln(os.Stderr, err.Error())
 		return
 	}
-	fmt.Println(mal.PrString(ast))
+	fmt.Println(mal.PrString(ast, true))
 }
 
 func main() {

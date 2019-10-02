@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 //Reader reads lisp for tokenization and parsing
@@ -117,6 +118,19 @@ func readAtom(reader *Reader) (Type, error) {
 		return &Boolean{Value: false}, nil
 	case "nil":
 		return &Nil{}, nil
+	}
+
+	if strings.HasPrefix(val, "\"") {
+
+		if !strings.HasSuffix(val, "\"") {
+			return nil, fmt.Errorf("unbalanced quotes in string")
+		}
+
+		s := val[1 : len(val)-1]
+		s = strings.ReplaceAll(s, "\\\"", "\"")
+		s = strings.ReplaceAll(s, "\\n", "\n")
+		s = strings.ReplaceAll(s, "\\\\", "\\")
+		return &String{Value: s}, nil
 	}
 
 	return &Symbol{Value: val}, nil

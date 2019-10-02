@@ -7,27 +7,27 @@ import (
 )
 
 //PrString takes a MalType and returns a string representation
-func PrString(ast Type) string {
+func PrString(ast Type, readably bool) string {
 	var sb strings.Builder
 
 	switch v := ast.(type) {
 	case *List:
 		sb.WriteString("(")
 		for i, vel := range v.Value {
-			sb.WriteString(printAtom(vel))
+			sb.WriteString(printAtom(vel, readably))
 			if i < len(v.Value)-1 {
 				sb.WriteString(" ")
 			}
 		}
 		sb.WriteString(")")
 	default:
-		sb.WriteString(printAtom(v))
+		sb.WriteString(printAtom(v, readably))
 
 	}
 	return sb.String()
 }
 
-func printAtom(atom Type) string {
+func printAtom(atom Type, readably bool) string {
 	switch v := atom.(type) {
 	case *Symbol:
 		return v.Value
@@ -39,7 +39,7 @@ func printAtom(atom Type) string {
 		//  'f' (-ddd.dddd, no exponent)
 		return strconv.FormatFloat(v.Value, 'g', -1, 64)
 	case *List:
-		return PrString(v)
+		return PrString(v, readably)
 	case *Boolean:
 		if v.Value {
 			return "true"
@@ -49,6 +49,12 @@ func printAtom(atom Type) string {
 		return "nil"
 	case *Function:
 		return "#<function>"
+	case *String:
+		s := v.Value
+		s = strings.ReplaceAll(s, "\\", "\\\\")
+		s = strings.ReplaceAll(s, "\"", "\\\"")
+		s = strings.ReplaceAll(s, "\n", "\\n")
+		return "\"" + s + "\""
 
 	default:
 		return fmt.Sprintf("<No print implementation for atom type: %T>", atom)
