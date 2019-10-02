@@ -72,7 +72,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...)
+		return fn.Fn(lst.Value[1:]...)
 
 	default:
 		return evalAst(v, env)
@@ -108,22 +108,22 @@ func print(ast mal.Type) {
 
 func createREPLEnv() *mal.Env {
 	replEnv := mal.NewEnv(nil, nil, nil)
-	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
+	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Fn: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
 		return &mal.Number{Value: a.Value + b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "-"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
+	replEnv.Set(&mal.Symbol{Value: "-"}, &mal.Function{Fn: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
 		return &mal.Number{Value: a.Value - b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "*"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
+	replEnv.Set(&mal.Symbol{Value: "*"}, &mal.Function{Fn: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
 		return &mal.Number{Value: a.Value * b.Value}, nil
 	}})
-	replEnv.Set(&mal.Symbol{Value: "/"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
+	replEnv.Set(&mal.Symbol{Value: "/"}, &mal.Function{Fn: func(args ...mal.Type) (mal.Type, error) {
 		a, _ := args[0].(*mal.Number)
 		b, _ := args[1].(*mal.Number)
 		return &mal.Number{Value: a.Value / b.Value}, nil

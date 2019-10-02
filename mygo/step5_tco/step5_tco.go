@@ -92,7 +92,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					}
 					if evaluatedTo == true {
 						ast = v.Value[2] //TCO
-						return r, nil
+						continue         //TCO
 					}
 					//condition evaluated to false, check if we have a branch for false, and execute it, if so
 					if len(v.Value) < 4 {
@@ -101,14 +101,18 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					ast = v.Value[3] //TCO
 					continue         //TCO
 				case "fn*":
-					return &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
-						bindings, ok := v.Value[1].(*mal.List)
-						if !ok {
-							return nil, fmt.Errorf("Invalid bindings to fn*")
-						}
-						fnEnv := mal.NewEnv(env, bindings.Value, args)
-						return eval(v.Value[2], fnEnv)
-					}}, nil
+					bindings, ok := v.Value[1].(*mal.List)
+					if !ok {
+						return nil, fmt.Errorf("Invalid bindings to fn*")
+					}
+					return &mal.Function{
+						Ast:    v.Value[2],
+						Params: bindings.Value,
+						Env:    env,
+						Fn: func(args ...mal.Type) (mal.Type, error) {
+							fnEnv := mal.NewEnv(env, bindings.Value, args)
+							return eval(v.Value[2], fnEnv)
+						}}, nil
 				}
 			}
 
@@ -118,7 +122,15 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			}
 			lst, _ := ev.(*mal.List)
 			fn, _ := lst.Value[0].(*mal.Function)
-			return fn.Value(lst.Value[1:]...)
+			//if we have an AST (and params/env), we can TCO this function!
+			if fn.Ast != nil {
+				ast = fn.Ast
+				//update the env for the function
+				env = mal.NewEnv(fn.Env, fn.Params, lst.Value[1:])
+				continue
+			}
+			//cannot TCO this (e.g. call to native function)
+			return fn.Fn(lst.Value[1:]...)
 
 		default:
 			return evalAst(v, env)

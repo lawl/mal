@@ -21,7 +21,10 @@ type Number struct {
 
 //Function holds a function
 type Function struct {
-	Value func(args ...Type) (Type, error)
+	Ast    Type
+	Params []Type
+	Env    *Env
+	Fn     func(args ...Type) (Type, error)
 }
 
 //Boolean holds a boolean

@@ -102,7 +102,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 				}
 				return r, nil
 			case "fn*":
-				return &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
+				return &mal.Function{Fn: func(args ...mal.Type) (mal.Type, error) {
 					bindings, ok := v.Value[1].(*mal.List)
 					if !ok {
 						return nil, fmt.Errorf("Invalid bindings to fn*")
@@ -119,7 +119,7 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...)
+		return fn.Fn(lst.Value[1:]...)
 
 	default:
 		return evalAst(v, env)

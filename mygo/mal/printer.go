@@ -32,12 +32,9 @@ func printAtom(atom Type, readably bool) string {
 	case *Symbol:
 		return v.Value
 	case *Number:
-		// format the float as a string, g as parameter means:
 		// see https://golang.org/pkg/strconv/#FormatFloat
-		// g' ('e' for large exponents, 'f' otherwise)
-		//  'e' (-d.dddde±dd, a decimal exponent)
 		//  'f' (-ddd.dddd, no exponent)
-		return strconv.FormatFloat(v.Value, 'g', -1, 64)
+		return strconv.FormatFloat(v.Value, 'f', -1, 64)
 	case *List:
 		return PrString(v, readably)
 	case *Boolean:

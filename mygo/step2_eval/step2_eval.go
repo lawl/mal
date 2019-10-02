@@ -27,7 +27,7 @@ func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, err
 		}
 		lst, _ := ev.(*mal.List)
 		fn, _ := lst.Value[0].(*mal.Function)
-		return fn.Value(lst.Value[1:]...)
+		return fn.Fn(lst.Value[1:]...)
 
 	default:
 		return evalAst(v, replEnv)
@@ -42,7 +42,7 @@ func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, 
 		if !ok {
 			return nil, fmt.Errorf("Unknown symbol '%s'", v.Value)
 		}
-		return &mal.Function{Value: fn}, nil
+		return &mal.Function{Fn: fn}, nil
 	case *mal.List:
 		var list mal.List
 		for _, val := range v.Value {
