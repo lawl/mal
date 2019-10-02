@@ -153,26 +153,9 @@ func print(ast mal.Type) {
 
 func createREPLEnv() *mal.Env {
 	replEnv := mal.NewEnv(nil, nil, nil)
-	replEnv.Set(&mal.Symbol{Value: "+"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
-		a, _ := args[0].(*mal.Number)
-		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value + b.Value}, nil
-	}})
-	replEnv.Set(&mal.Symbol{Value: "-"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
-		a, _ := args[0].(*mal.Number)
-		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value - b.Value}, nil
-	}})
-	replEnv.Set(&mal.Symbol{Value: "*"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
-		a, _ := args[0].(*mal.Number)
-		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value * b.Value}, nil
-	}})
-	replEnv.Set(&mal.Symbol{Value: "/"}, &mal.Function{Value: func(args ...mal.Type) (mal.Type, error) {
-		a, _ := args[0].(*mal.Number)
-		b, _ := args[1].(*mal.Number)
-		return &mal.Number{Value: a.Value / b.Value}, nil
-	}})
+	for k, v := range mal.CoreNS {
+		replEnv.Set(k, v)
+	}
 	return replEnv
 }
 
