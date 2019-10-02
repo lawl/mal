@@ -10,6 +10,11 @@ type Env struct {
 func NewEnv(outer *Env, binds []Type, exprs []Type) *Env {
 	env := Env{outer: outer, data: make(map[string]Type)}
 	if binds != nil && exprs != nil {
+		//TODO this needs to be removed when variadic function support is added, for now: don't crash
+		if len(binds) != len(exprs) {
+			return &env
+		}
+
 		for i := range binds {
 			if val, ok := binds[i].(*Symbol); ok {
 				env.Set(val, exprs[i])

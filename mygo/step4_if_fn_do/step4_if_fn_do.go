@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"mygomal/mal"
 	"os"
@@ -175,7 +177,29 @@ func rep(s string, env *mal.Env) {
 }
 
 func main() {
+	usePlainStdin := flag.Bool("stdin", false, "don't use nice readline based repl. only for tests, as the nice repl breaks them")
+	flag.Parse()
+
 	env := createREPLEnv()
+	rep("(def! not (fn* (a) (if a false true)))", env)
+
+	if *usePlainStdin {
+		stdinREPL(env)
+		return
+	}
+	niceRepl(env)
+}
+
+func stdinREPL(env *mal.Env) {
+	stdin := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("user> ")
+		s, _ := stdin.ReadString('\n')
+		rep(s, env)
+	}
+}
+
+func niceRepl(env *mal.Env) {
 
 	l, err := readline.NewEx(&readline.Config{
 		Prompt:       "user> ",
