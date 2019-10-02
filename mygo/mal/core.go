@@ -3,6 +3,7 @@ package mal
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 //CoreNS contains builtin functions for mal
@@ -74,6 +75,14 @@ var CoreNS = map[*Symbol]*Function{
 		a, _ := args[0].(*Number)
 		b, _ := args[1].(*Number)
 		return &Boolean{Value: a.Value >= b.Value}, nil
+	}},
+
+	&Symbol{Value: "pr-str"}: &Function{Value: func(args ...Type) (Type, error) {
+		var sb strings.Builder
+		for _, v := range args {
+			sb.WriteString(PrString(v, true))
+		}
+		return &String{Value: sb.String()}, nil
 	}},
 
 	// compare the first two parameters and return true if they are the same type and

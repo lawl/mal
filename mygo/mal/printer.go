@@ -51,9 +51,11 @@ func printAtom(atom Type, readably bool) string {
 		return "#<function>"
 	case *String:
 		s := v.Value
-		s = strings.ReplaceAll(s, "\\", "\\\\")
-		s = strings.ReplaceAll(s, "\"", "\\\"")
-		s = strings.ReplaceAll(s, "\n", "\\n")
+		if readably {
+			s = strings.ReplaceAll(s, "\\", "\\\\")
+			s = strings.ReplaceAll(s, "\"", "\\\"")
+			s = strings.ReplaceAll(s, "\n", "\\n")
+		}
 		return "\"" + s + "\""
 
 	default:

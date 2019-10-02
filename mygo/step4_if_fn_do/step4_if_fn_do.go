@@ -150,7 +150,7 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 }
 
 func print(ast mal.Type) {
-	fmt.Println(mal.PrString(ast))
+	fmt.Println(mal.PrString(ast, true))
 }
 
 func createREPLEnv() *mal.Env {
