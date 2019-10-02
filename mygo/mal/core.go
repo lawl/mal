@@ -79,8 +79,11 @@ var CoreNS = map[*Symbol]*Function{
 
 	&Symbol{Value: "pr-str"}: &Function{Value: func(args ...Type) (Type, error) {
 		var sb strings.Builder
-		for _, v := range args {
+		for i, v := range args {
 			sb.WriteString(PrString(v, true))
+			if i < len(args)-1 {
+				sb.WriteString(" ")
+			}
 		}
 		return &String{Value: sb.String()}, nil
 	}},
