@@ -71,6 +71,34 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					}
 				}
 				return lastResult, nil
+			case "if":
+				r, err := eval(v.Value[1], env)
+				if err != nil {
+					return nil, err
+				}
+				evaluatedTo := true
+				if b, ok := r.(*mal.Boolean); ok {
+					evaluatedTo = b.Value
+				}
+				if _, ok := r.(*mal.Nil); ok {
+					evaluatedTo = false
+				}
+				if evaluatedTo == true {
+					r, err := eval(v.Value[2], env)
+					if err != nil {
+						return nil, err
+					}
+					return r, nil
+				}
+				//condition evaluated to false, check if we have a branch for false, and execute it, if so
+				if len(v.Value) < 4 {
+					return nil, nil
+				}
+				r, err = eval(v.Value[3], env)
+				if err != nil {
+					return nil, err
+				}
+				return r, nil
 			}
 		}
 
