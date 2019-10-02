@@ -92,13 +92,25 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 				}
 				//condition evaluated to false, check if we have a branch for false, and execute it, if so
 				if len(v.Value) < 4 {
-					return nil, nil
+					return &mal.Nil{}, nil
 				}
 				r, err = eval(v.Value[3], env)
 				if err != nil {
 					return nil, err
 				}
 				return r, nil
+			case "fn*":
+				return &mal.Function{Value: func(args ...mal.Type) mal.Type {
+					bindings, ok := v.Value[1].(*mal.List)
+					if !ok {
+						// todo handle err by returning ..., err
+						panic("TODO should error handle invalid binding list to fn*")
+					}
+					fnEnv := mal.NewEnv(env, bindings.Value, args)
+					r, _ := eval(v.Value[2], fnEnv)
+					// todo also handler err here
+					return r
+				}}, nil
 			}
 		}
 

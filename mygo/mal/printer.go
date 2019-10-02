@@ -1,6 +1,7 @@
 package mal
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -50,6 +51,6 @@ func printAtom(atom Type) string {
 		return "#<function>"
 
 	default:
-		return "<TO STRING NOT IMPLEMENTED>"
+		return fmt.Sprintf("<No print implementation for atom type: %T>", atom)
 	}
 }
