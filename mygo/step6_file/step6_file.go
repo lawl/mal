@@ -226,10 +226,10 @@ func main() {
 	if len(args) > 0 {
 		var argList mal.List
 		for _, val := range args[1:] {
-			argList.Value = append(argList.Value, val)
+			argList.Value = append(argList.Value, &mal.String{Value: val})
 		}
-		env.Set(&mal.Symbol{Value: "*ARGV*"}, argList)
-		rep(`(load-file "`+args[0]+`" )`, env, true)
+		env.Set(&mal.Symbol{Value: "*ARGV*"}, &argList)
+		rep(`(load-file "`+args[0]+`" )`, env, false)
 		return
 	}
 	env.Set(&mal.Symbol{Value: "*ARGV*"}, &mal.List{})

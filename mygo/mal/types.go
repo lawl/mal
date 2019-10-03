@@ -19,7 +19,7 @@ type HashMap struct {
 	Value map[string]Type
 }
 
-//Creates a new HashMap
+//NewHashMap creates a new HashMap
 func NewHashMap() HashMap {
 	var m HashMap
 	m.Value = make(map[string]Type, 16) //bucket size 16 by default, arbitrary

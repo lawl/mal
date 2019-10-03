@@ -205,7 +205,7 @@ func readAtom(reader *Reader) (Type, error) {
 		return &String{Value: s}, nil
 	}
 
-	if strings.HasPrefix(val, ";;") { // comment: skip
+	if strings.HasPrefix(val, ";") { // comment: skip
 		return readForm(reader)
 	}
 
