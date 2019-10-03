@@ -62,6 +62,11 @@ func macroExpand(ast mal.Type, env *mal.Env) (mal.Type, error) {
 	return ast, nil
 }
 
+type tryCatchInfo struct {
+	errMsg  *mal.String
+	isError bool
+}
+
 func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 tailcalloptimized:
 	switch astList := ast.(type) {
@@ -177,6 +182,23 @@ tailcalloptimized:
 				goto tailcalloptimized
 			case "macroexpand":
 				return macroExpand(astList.Value[1], env)
+			case "try*":
+				r, err := eval(astList.Value[1], env)
+				if err != nil {
+					catchBlock, _ := astList.Value[2].(*mal.List)
+					if symb, ok := catchBlock.Value[0].(*mal.Symbol); ok && symb.Value == "catch*" {
+						bind, _ := catchBlock.Value[1].(*mal.Symbol)
+						exEnv := mal.NewEnv(env, nil, nil)
+						exEnv.Set(bind, &mal.String{Value: err.Error()})
+						ast = catchBlock.Value[2]
+						env = exEnv
+						goto tailcalloptimized
+					}
+				}
+				return r, err
+			case "throw":
+				errStr, _ := astList.Value[1].(*mal.String)
+				return nil, fmt.Errorf(errStr.Value)
 			}
 		}
 		ev, err := evalAst(astList, env)
@@ -206,7 +228,7 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 	case *mal.Symbol:
 		val := env.Get(v)
 		if val == nil {
-			return nil, fmt.Errorf("Unknown symbol '%s' not found", v.Value)
+			return nil, fmt.Errorf("'%s' not found", v.Value)
 		}
 		return val, nil
 	case *mal.List:
@@ -310,7 +332,7 @@ func rep(s string, env *mal.Env, doPrint bool) {
 	}
 	expr, err := eval(ast, env)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, "Error: "+err.Error())
 		return
 	}
 	if doPrint {
