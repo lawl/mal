@@ -36,8 +36,8 @@ var CoreNS = map[*Symbol]*Function{
 	}},
 	//return true if the first parameter is a list, false otherwise.
 	&Symbol{Value: "list?"}: &Function{Fn: func(args ...Type) (Type, error) {
-		_, ok := args[0].(*List)
-		return &Boolean{Value: ok}, nil
+		l, ok := args[0].(*List)
+		return &Boolean{Value: ok && !l.IsVector}, nil
 	}},
 	//treat the first parameter as a list and return true if the list is empty and false if it contains any elements.
 	&Symbol{Value: "empty?"}: &Function{Fn: func(args ...Type) (Type, error) {
@@ -195,19 +195,6 @@ func compareFunc(args ...Type) (Type, error) {
 		return &Boolean{Value: v.Value == v2.Value}, nil
 	case *List:
 		v2, _ := args[1].(*List)
-		if len(v.Value) != len(v2.Value) {
-			return &Boolean{Value: false}, nil
-		}
-		for i := range v.Value {
-			r, _ := compareFunc(v.Value[i], v2.Value[i])
-			rbool, _ := r.(*Boolean)
-			if rbool.Value == false {
-				return &Boolean{Value: false}, nil
-			}
-		}
-		return &Boolean{Value: true}, nil
-	case *Vector:
-		v2, _ := args[1].(*Vector)
 		if len(v.Value) != len(v2.Value) {
 			return &Boolean{Value: false}, nil
 		}

@@ -40,6 +40,9 @@ tailcalloptimized:
 		if len(v.Value) == 0 {
 			return ast, nil
 		}
+		if v.IsVector { //we want to handle vectors the same as the default case
+			return evalAst(v, env)
+		}
 
 		// if the first element of the list is a symbol, check for special handling, such as "def!"
 		if symb, ok := v.Value[0].(*mal.Symbol); ok {
@@ -56,15 +59,6 @@ tailcalloptimized:
 					return nil, fmt.Errorf("'let*' expects at least 2 paramters")
 				}
 				if bindings, ok := v.Value[1].(*mal.List); ok {
-					for i := 0; i < len(bindings.Value)/2; i++ {
-						idx := (i * 2)
-						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
-					}
-
-					env = newEnv
-					ast = v.Value[2]
-					goto tailcalloptimized
-				} else if bindings, ok := v.Value[1].(*mal.Vector); ok {
 					for i := 0; i < len(bindings.Value)/2; i++ {
 						idx := (i * 2)
 						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
@@ -112,15 +106,10 @@ tailcalloptimized:
 				listBindings, ok := v.Value[1].(*mal.List)
 				if ok {
 					bindings = listBindings.Value
+				} else {
+					return nil, fmt.Errorf("Invalid bindings to fn*")
 				}
-				if !ok {
-					vectorBindings, ok := v.Value[1].(*mal.Vector)
-					if ok {
-						bindings = vectorBindings.Value
-					} else {
-						return nil, fmt.Errorf("Invalid bindings to fn*")
-					}
-				}
+
 				return &mal.Function{
 					Ast:    v.Value[2],
 					Params: bindings,
@@ -163,7 +152,7 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		return val, nil
 	case *mal.List:
-		var list mal.List
+		list := mal.NewList(v.IsVector)
 		for _, val := range v.Value {
 			evaled, err := eval(val, env)
 			if err != nil {
@@ -172,16 +161,6 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
-	case *mal.Vector:
-		var vector mal.Vector
-		for _, val := range v.Value {
-			evaled, err := eval(val, env)
-			if err != nil {
-				return nil, err
-			}
-			vector.Value = append(vector.Value, evaled)
-		}
-		return &vector, nil
 	case *mal.HashMap:
 		hmap := mal.NewHashMap()
 		for key, val := range v.Value {
@@ -243,7 +222,7 @@ func main() {
 	env := createREPLEnv()
 
 	if len(args) > 0 {
-		var argList mal.List
+		argList := mal.NewList(false)
 		for _, val := range args[1:] {
 			argList.Value = append(argList.Value, &mal.String{Value: val})
 		}

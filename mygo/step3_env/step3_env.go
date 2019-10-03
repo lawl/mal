@@ -39,6 +39,9 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		if len(v.Value) == 0 {
 			return ast, nil
 		}
+		if v.IsVector { //we want to handle vectors the same as the default case
+			return evalAst(v, env)
+		}
 
 		// if the first element of the list is a symbol, check for special handling, such as "def!"
 		if symb, ok := v.Value[0].(*mal.Symbol); ok {
@@ -55,13 +58,6 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					return nil, fmt.Errorf("'let*' expects at least 2 paramters")
 				}
 				if bindings, ok := v.Value[1].(*mal.List); ok {
-					for i := 0; i < len(bindings.Value)/2; i++ {
-						idx := (i * 2)
-						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
-					}
-
-					return eval(v.Value[2], newEnv)
-				} else if bindings, ok := v.Value[1].(*mal.Vector); ok {
 					for i := 0; i < len(bindings.Value)/2; i++ {
 						idx := (i * 2)
 						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
@@ -95,7 +91,7 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		return val, nil
 	case *mal.List:
-		var list mal.List
+		list := mal.NewList(v.IsVector)
 		for _, val := range v.Value {
 			evaled, err := eval(val, env)
 			if err != nil {
@@ -104,16 +100,6 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
-	case *mal.Vector:
-		var vector mal.Vector
-		for _, val := range v.Value {
-			evaled, err := eval(val, env)
-			if err != nil {
-				return nil, err
-			}
-			vector.Value = append(vector.Value, evaled)
-		}
-		return &vector, nil
 	default:
 		return ast, nil
 	}

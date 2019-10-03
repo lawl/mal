@@ -21,6 +21,9 @@ func eval(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, err
 		if len(v.Value) == 0 {
 			return ast, nil
 		}
+		if v.IsVector { //we want to handle vectors the same as the default case
+			return evalAst(v, replEnv)
+		}
 		ev, err := evalAst(v, replEnv)
 		if err != nil {
 			return nil, err
@@ -44,7 +47,7 @@ func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, 
 		}
 		return &mal.Function{Fn: fn}, nil
 	case *mal.List:
-		var list mal.List
+		list := mal.NewList(v.IsVector)
 		for _, val := range v.Value {
 			evaled, err := eval(val, replEnv)
 			if err != nil {
@@ -53,16 +56,6 @@ func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, 
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
-	case *mal.Vector:
-		var vector mal.Vector
-		for _, val := range v.Value {
-			evaled, err := eval(val, replEnv)
-			if err != nil {
-				return nil, err
-			}
-			vector.Value = append(vector.Value, evaled)
-		}
-		return &vector, nil
 	case *mal.HashMap:
 		hmap := mal.NewHashMap()
 		for key, val := range v.Value {

@@ -12,23 +12,22 @@ func PrString(ast Type, readably bool) string {
 
 	switch v := ast.(type) {
 	case *List:
-		sb.WriteString("(")
+		if v.IsVector {
+			sb.WriteString("[")
+		} else {
+			sb.WriteString("(")
+		}
 		for i, vel := range v.Value {
 			sb.WriteString(printAtom(vel, readably))
 			if i < len(v.Value)-1 {
 				sb.WriteString(" ")
 			}
 		}
-		sb.WriteString(")")
-	case *Vector:
-		sb.WriteString("[")
-		for i, vel := range v.Value {
-			sb.WriteString(printAtom(vel, readably))
-			if i < len(v.Value)-1 {
-				sb.WriteString(" ")
-			}
+		if v.IsVector {
+			sb.WriteString("]")
+		} else {
+			sb.WriteString(")")
 		}
-		sb.WriteString("]")
 	case *HashMap:
 		sb.WriteString("{")
 		i := 0
@@ -58,8 +57,6 @@ func printAtom(atom Type, readably bool) string {
 		//  'f' (-ddd.dddd, no exponent)
 		return strconv.FormatFloat(v.Value, 'f', -1, 64)
 	case *List:
-		return PrString(v, readably)
-	case *Vector:
 		return PrString(v, readably)
 	case *HashMap:
 		return PrString(v, readably)

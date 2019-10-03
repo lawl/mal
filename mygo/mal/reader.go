@@ -96,7 +96,7 @@ func readForm(reader *Reader) (Type, error) {
 }
 
 func readList(reader *Reader) (Type, error) {
-	var list List
+	list := NewList(false)
 	for {
 		peek, eof := reader.peek()
 		if peek != ")" && !eof {
@@ -116,7 +116,7 @@ func readList(reader *Reader) (Type, error) {
 }
 
 func readVector(reader *Reader) (Type, error) {
-	var vector Vector
+	vector := NewList(true)
 	for {
 		peek, eof := reader.peek()
 		if peek != "]" && !eof {

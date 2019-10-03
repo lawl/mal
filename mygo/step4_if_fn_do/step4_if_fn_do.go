@@ -39,6 +39,9 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		if len(v.Value) == 0 {
 			return ast, nil
 		}
+		if v.IsVector { //we want to handle vectors the same as the default case
+			return evalAst(v, env)
+		}
 
 		// if the first element of the list is a symbol, check for special handling, such as "def!"
 		if symb, ok := v.Value[0].(*mal.Symbol); ok {
@@ -135,7 +138,7 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 		}
 		return val, nil
 	case *mal.List:
-		var list mal.List
+		list := mal.NewList(v.IsVector)
 		for _, val := range v.Value {
 			evaled, err := eval(val, env)
 			if err != nil {

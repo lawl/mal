@@ -6,12 +6,15 @@ type Type interface {
 
 //List holds a list of MalTypes
 type List struct {
-	Value []Type
+	Value    []Type
+	IsVector bool
 }
 
-//Vector holds a list of MalTypes
-type Vector struct {
-	Value []Type
+//NewList creates a list or vector
+func NewList(isVector bool) List {
+	var list List
+	list.IsVector = isVector
+	return list
 }
 
 //HashMap holds mappings from string -> MalType
