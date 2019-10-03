@@ -53,6 +53,26 @@ func evalAst(ast mal.Type, replEnv map[string]func(args ...mal.Type) (mal.Type, 
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
+	case *mal.Vector:
+		var vector mal.Vector
+		for _, val := range v.Value {
+			evaled, err := eval(val, replEnv)
+			if err != nil {
+				return nil, err
+			}
+			vector.Value = append(vector.Value, evaled)
+		}
+		return &vector, nil
+	case *mal.HashMap:
+		hmap := mal.NewHashMap()
+		for key, val := range v.Value {
+			evaled, err := eval(val, replEnv)
+			if err != nil {
+				return nil, err
+			}
+			hmap.Value[key] = evaled
+		}
+		return &hmap, nil
 	default:
 		return ast, nil
 	}

@@ -173,6 +173,16 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			vector.Value = append(vector.Value, evaled)
 		}
 		return &vector, nil
+	case *mal.HashMap:
+		hmap := mal.NewHashMap()
+		for key, val := range v.Value {
+			evaled, err := eval(val, env)
+			if err != nil {
+				return nil, err
+			}
+			hmap.Value[key] = evaled
+		}
+		return &hmap, nil
 	default:
 		return ast, nil
 	}
