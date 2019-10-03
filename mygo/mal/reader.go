@@ -79,6 +79,13 @@ func readForm(reader *Reader) (Type, error) {
 			return nil, err
 		}
 		return v, nil
+	case "{":
+		reader.next()
+		v, err := readHashmap(reader)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
 	default:
 		v, err := readAtom(reader)
 		if err != nil {
@@ -99,7 +106,7 @@ func readList(reader *Reader) (Type, error) {
 			}
 			list.Value = append(list.Value, v)
 		} else if eof {
-			return nil, fmt.Errorf("unbalanced parenthesis")
+			return nil, fmt.Errorf("unbalanced parenthesis in list, expected ')'")
 		} else {
 			reader.next()
 			return &list, nil
@@ -119,10 +126,39 @@ func readVector(reader *Reader) (Type, error) {
 			}
 			vector.Value = append(vector.Value, v)
 		} else if eof {
-			return nil, fmt.Errorf("unbalanced parenthesis")
+			return nil, fmt.Errorf("unbalanced parenthesis in vector, expected ']'")
 		} else {
 			reader.next()
 			return &vector, nil
+		}
+
+	}
+}
+
+func readHashmap(reader *Reader) (Type, error) {
+	hmap := NewHashMap()
+	for {
+		peek, eof := reader.peek()
+		if peek != "}" && !eof {
+			key, err := readForm(reader)
+			if err != nil {
+				return nil, err
+			}
+			value, err := readForm(reader)
+			if err != nil {
+				return nil, err
+			}
+			if strKey, ok := key.(*String); ok {
+				hmap.Value[strKey.Value] = value
+			} else {
+				return nil, fmt.Errorf("Map keys must be of type String, got '%T' instead", key)
+			}
+
+		} else if eof {
+			return nil, fmt.Errorf("unbalanced parenthesis in hash map, expected '}'")
+		} else {
+			reader.next()
+			return &hmap, nil
 		}
 
 	}

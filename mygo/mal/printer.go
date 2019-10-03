@@ -29,6 +29,19 @@ func PrString(ast Type, readably bool) string {
 			}
 		}
 		sb.WriteString("]")
+	case *HashMap:
+		sb.WriteString("{")
+		i := 0
+		for key, vel := range v.Value {
+			sb.WriteString(printAtom(&String{Value: key}, readably))
+			sb.WriteString(" ")
+			sb.WriteString(printAtom(vel, readably))
+			if i < len(v.Value)-1 {
+				sb.WriteString(" ")
+			}
+			i++
+		}
+		sb.WriteString("}")
 	default:
 		sb.WriteString(printAtom(v, readably))
 
@@ -47,6 +60,8 @@ func printAtom(atom Type, readably bool) string {
 	case *List:
 		return PrString(v, readably)
 	case *Vector:
+		return PrString(v, readably)
+	case *HashMap:
 		return PrString(v, readably)
 	case *Boolean:
 		if v.Value {

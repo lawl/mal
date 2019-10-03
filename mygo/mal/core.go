@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -218,6 +219,28 @@ func compareFunc(args ...Type) (Type, error) {
 			}
 		}
 		return &Boolean{Value: true}, nil
+	case *HashMap:
+		v2, _ := args[1].(*HashMap)
+		k1 := keysFromMap(v.Value)
+		k2 := keysFromMap(v2.Value)
+		if len(k1) != len(k2) {
+			return &Boolean{Value: false}, nil
+		}
+		sort.Strings(k1)
+		sort.Strings(k2)
+
+		for i := range k1 {
+			if k1[i] != k2[i] {
+				return &Boolean{Value: false}, nil
+			}
+			r, _ := compareFunc(v.Value[k1[i]], v2.Value[k2[i]])
+			rbool, _ := r.(*Boolean)
+			if rbool.Value == false {
+				return &Boolean{Value: false}, nil
+			}
+		}
+
+		return &Boolean{Value: true}, nil
 	case *Boolean:
 		v2, _ := args[1].(*Boolean)
 		return &Boolean{Value: v.Value == v2.Value}, nil
@@ -235,4 +258,14 @@ func compareFunc(args ...Type) (Type, error) {
 	default:
 		return nil, fmt.Errorf("No equals operation implemented for type: %T", v)
 	}
+}
+
+func keysFromMap(themap map[string]Type) []string {
+	keys := make([]string, len(themap))
+	i := 0
+	for k := range themap {
+		keys[i] = k
+		i++
+	}
+	return keys
 }
