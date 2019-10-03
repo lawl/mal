@@ -2,6 +2,7 @@ package mal
 
 import (
 	"fmt"
+	"io/ioutil"
 	"reflect"
 	"strings"
 )
@@ -115,6 +116,20 @@ var CoreNS = map[*Symbol]*Function{
 		}
 		fmt.Println(sb.String())
 		return &Nil{}, nil
+	}},
+
+	&Symbol{Value: "read-string"}: &Function{Fn: func(args ...Type) (Type, error) {
+		v, _ := args[0].(*String)
+		return ReadStr(v.Value)
+	}},
+
+	&Symbol{Value: "slurp"}: &Function{Fn: func(args ...Type) (Type, error) {
+		filename, _ := args[0].(*String)
+		dat, err := ioutil.ReadFile(filename.Value)
+		if err != nil {
+			return nil, err
+		}
+		return &String{Value: string(dat)}, nil
 	}},
 
 	// compare the first two parameters and return true if they are the same type and
