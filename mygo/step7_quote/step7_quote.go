@@ -118,6 +118,11 @@ tailcalloptimized:
 						fnEnv := mal.NewEnv(env, listBindings.Value, args)
 						return eval(v.Value[2], fnEnv)
 					}}, nil
+			case "quote":
+				return v.Value[1], nil
+			case "quasiquote":
+				ast = quasiquote(v.Value[1])
+				goto tailcalloptimized
 			}
 		}
 
@@ -174,6 +179,52 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 	default:
 		return ast, nil
 	}
+}
+
+//Uh yeah... I just implemented https://github.com/kanaka/mal/blob/master/process/guide.md#step7
+//I haven't tried understanding this function in detail yet
+func quasiquote(ast mal.Type) mal.Type {
+	if !isPair(ast) {
+		newLst := mal.NewList(false)
+		newLst.Value = append(newLst.Value, &mal.Symbol{Value: "quote"})
+		newLst.Value = append(newLst.Value, ast)
+		return &newLst
+	}
+	astLst, _ := ast.(*mal.List)
+	if symbol, ok := astLst.Value[0].(*mal.Symbol); ok && symbol.Value == "unquote" {
+		return astLst.Value[1]
+	}
+
+	if isPair(astLst.Value[0]) {
+		if l2, ok := astLst.Value[0].(*mal.List); ok && isPair(l2) {
+			if symb, ok := l2.Value[0].(*mal.Symbol); ok && symb.Value == "splice-unquote" {
+				newLst := mal.NewList(false)
+				newLst.Value = append(newLst.Value, &mal.Symbol{Value: "concat"})
+				newLst.Value = append(newLst.Value, l2.Value[1])
+				tmp := mal.NewList(false)
+				tmp.Value = append(tmp.Value, astLst.Value[1:]...)
+				newLst.Value = append(newLst.Value, quasiquote(&tmp))
+				return &newLst
+			}
+		}
+	}
+
+	newLst := mal.NewList(false)
+	newLst.Value = append(newLst.Value, &mal.Symbol{Value: "cons"})
+	newLst.Value = append(newLst.Value, quasiquote(astLst.Value[0]))
+	tmp := mal.NewList(false)
+	tmp.Value = append(tmp.Value, astLst.Value[1:]...)
+	newLst.Value = append(newLst.Value, quasiquote(&tmp))
+	return &newLst
+}
+
+func isPair(ast mal.Type) bool {
+	if lst, ok := ast.(*mal.List); ok {
+		if len(lst.Value) != 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func print(ast mal.Type) {

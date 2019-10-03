@@ -182,14 +182,15 @@ func readAtom(reader *Reader) (Type, error) {
 	case "nil":
 		return &Nil{}, nil
 	case "@":
-		var list List
-		list.Value = append(list.Value, &Symbol{Value: "deref"})
-		v, err := readForm(reader)
-		if err != nil {
-			return nil, err
-		}
-		list.Value = append(list.Value, v)
-		return &list, nil
+		return readerMacroExpand(reader, "deref")
+	case "'":
+		return readerMacroExpand(reader, "quote")
+	case "~":
+		return readerMacroExpand(reader, "unquote")
+	case "~@":
+		return readerMacroExpand(reader, "splice-unquote")
+	case "`":
+		return readerMacroExpand(reader, "quasiquote")
 	}
 
 	if strings.HasPrefix(val, "\"") {
@@ -208,4 +209,15 @@ func readAtom(reader *Reader) (Type, error) {
 	}
 
 	return &Symbol{Value: val}, nil
+}
+
+func readerMacroExpand(reader *Reader, symbolName string) (*List, error) {
+	list := NewList(false)
+	list.Value = append(list.Value, &Symbol{Value: symbolName})
+	v, err := readForm(reader)
+	if err != nil {
+		return nil, err
+	}
+	list.Value = append(list.Value, v)
+	return &list, nil
 }
