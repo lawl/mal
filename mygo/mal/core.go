@@ -156,9 +156,20 @@ var CoreNS = map[*Symbol]*Function{
 	&Symbol{Value: "cons"}: &Function{Fn: func(args ...Type) (Type, error) {
 		v := args[0]
 		lst, _ := args[1].(*List)
-		newLst := NewList(lst.IsVector)
+		newLst := NewList(false)
 		newLst.Value = append(newLst.Value, v)
 		newLst.Value = append(newLst.Value, lst.Value...)
+		return &newLst, nil
+	}},
+	&Symbol{Value: "concat"}: &Function{Fn: func(args ...Type) (Type, error) {
+		newLst := NewList(false)
+		for _, val := range args {
+			if v, ok := val.(*List); ok {
+				newLst.Value = append(newLst.Value, v.Value...)
+			} else {
+				return nil, fmt.Errorf("concat expects all parameters to be lists")
+			}
+		}
 		return &newLst, nil
 	}},
 
