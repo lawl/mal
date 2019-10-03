@@ -64,6 +64,15 @@ tailcalloptimized:
 					env = newEnv
 					ast = v.Value[2]
 					goto tailcalloptimized
+				} else if bindings, ok := v.Value[1].(*mal.Vector); ok {
+					for i := 0; i < len(bindings.Value)/2; i++ {
+						idx := (i * 2)
+						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
+					}
+
+					env = newEnv
+					ast = v.Value[2]
+					goto tailcalloptimized
 				}
 				return nil, fmt.Errorf("'let!': invalid arguments")
 			case "do":

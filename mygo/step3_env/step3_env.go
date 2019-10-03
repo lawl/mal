@@ -61,6 +61,13 @@ func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 					}
 
 					return eval(v.Value[2], newEnv)
+				} else if bindings, ok := v.Value[1].(*mal.Vector); ok {
+					for i := 0; i < len(bindings.Value)/2; i++ {
+						idx := (i * 2)
+						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
+					}
+
+					return eval(v.Value[2], newEnv)
 				}
 				return nil, fmt.Errorf("'let!': invalid arguments")
 			}
@@ -97,6 +104,16 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
+	case *mal.Vector:
+		var vector mal.Vector
+		for _, val := range v.Value {
+			evaled, err := eval(val, env)
+			if err != nil {
+				return nil, err
+			}
+			vector.Value = append(vector.Value, evaled)
+		}
+		return &vector, nil
 	default:
 		return ast, nil
 	}
