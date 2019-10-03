@@ -40,3 +40,8 @@ type Nil struct {
 type String struct {
 	Value string
 }
+
+//Atom holds a reference to a mal value
+type Atom struct {
+	Value Type
+}

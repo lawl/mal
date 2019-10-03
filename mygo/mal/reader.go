@@ -118,6 +118,15 @@ func readAtom(reader *Reader) (Type, error) {
 		return &Boolean{Value: false}, nil
 	case "nil":
 		return &Nil{}, nil
+	case "@":
+		var list List
+		list.Value = append(list.Value, &Symbol{Value: "deref"})
+		v, err := readForm(reader)
+		if err != nil {
+			return nil, err
+		}
+		list.Value = append(list.Value, v)
+		return &list, nil
 	}
 
 	if strings.HasPrefix(val, "\"") {
@@ -131,6 +140,10 @@ func readAtom(reader *Reader) (Type, error) {
 		s = strings.ReplaceAll(s, "\\n", "\n")
 		s = strings.ReplaceAll(s, "\\\\", "\\")
 		return &String{Value: s}, nil
+	}
+
+	if strings.HasPrefix(val, ";;") { // comment: skip
+		return readForm(reader)
 	}
 
 	return &Symbol{Value: val}, nil

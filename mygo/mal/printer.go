@@ -55,6 +55,12 @@ func printAtom(atom Type, readably bool) string {
 			s = "\"" + s + "\""
 		}
 		return s
+	case *Atom:
+		var sb strings.Builder
+		sb.WriteString("(atom ")
+		sb.WriteString(printAtom(v.Value, readably))
+		sb.WriteString(")")
+		return sb.String()
 
 	default:
 		return fmt.Sprintf("<No print implementation for atom type: %T>", atom)

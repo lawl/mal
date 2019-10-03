@@ -132,6 +132,47 @@ var CoreNS = map[*Symbol]*Function{
 		return &String{Value: string(dat)}, nil
 	}},
 
+	&Symbol{Value: "atom"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return &Atom{Value: args[0]}, nil
+	}},
+
+	&Symbol{Value: "atom?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*Atom)
+		return &Boolean{Value: ok}, nil
+	}},
+	&Symbol{Value: "deref"}: &Function{Fn: func(args ...Type) (Type, error) {
+		v, ok := args[0].(*Atom)
+		if !ok {
+			return nil, fmt.Errorf("Argument to deref is not an atom")
+		}
+		return v.Value, nil
+	}},
+	&Symbol{Value: "reset!"}: &Function{Fn: func(args ...Type) (Type, error) {
+		v, _ := args[0].(*Atom)
+		v.Value = args[1]
+		return args[1], nil
+	}},
+	/* Takes an atom, a function, and zero or more function arguments.
+	The atom's value is modified to the result of applying the function
+	with the atom's value as the first argument and the optionally given
+	function arguments as the rest of the arguments. The new atom's value is returned */
+	&Symbol{Value: "swap!"}: &Function{Fn: func(args ...Type) (Type, error) {
+		v, _ := args[0].(*Atom)
+		fn, _ := args[1].(*Function)
+		optargs := args[2:]
+		fnArgs := make([]Type, len(optargs)+1)
+		fnArgs[0] = v.Value
+		for i := range optargs {
+			fnArgs[i+1] = optargs[i]
+		}
+		r, err := fn.Fn(fnArgs...)
+		if err != nil {
+			return nil, err
+		}
+		v.Value = r
+		return r, nil
+	}},
+
 	// compare the first two parameters and return true if they are the same type and
 	// contain the same value. In the case of equal length lists, each element of the
 	// list should be compared for equality and if they are the same return true, otherwise false.
@@ -174,6 +215,9 @@ func compareFunc(args ...Type) (Type, error) {
 	case *String:
 		v2, _ := args[1].(*String)
 		return &Boolean{Value: v.Value == v2.Value}, nil
+	case *Atom:
+		v2, _ := args[1].(*Atom)
+		return &Boolean{Value: v == v2}, nil
 
 	default:
 		return nil, fmt.Errorf("No equals operation implemented for type: %T", v)
