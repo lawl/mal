@@ -199,9 +199,7 @@ func readAtom(reader *Reader) (Type, error) {
 		}
 
 		s := val[1 : len(val)-1]
-		s = strings.ReplaceAll(s, "\\\"", "\"")
-		s = strings.ReplaceAll(s, "\\n", "\n")
-		s = strings.ReplaceAll(s, "\\\\", "\\")
+		s = StringUnescape(s)
 		return &String{Value: s}, nil
 	}
 
