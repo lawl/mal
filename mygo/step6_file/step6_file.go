@@ -200,7 +200,20 @@ func main() {
 	usePlainStdin := flag.Bool("stdin", false, "don't use nice readline based repl. only for tests, as the nice repl breaks them")
 	flag.Parse()
 
+	args := flag.Args()
+
 	env := createREPLEnv()
+
+	if len(args) > 0 {
+		var argList mal.List
+		for _, val := range args[1:] {
+			argList.Value = append(argList.Value, val)
+		}
+		env.Set(&mal.Symbol{Value: "*ARGV*"}, argList)
+		rep(`(load-file "`+args[0]+`" )`, env, true)
+		return
+	}
+	env.Set(&mal.Symbol{Value: "*ARGV*"}, &mal.List{})
 
 	if *usePlainStdin {
 		stdinREPL(env)
