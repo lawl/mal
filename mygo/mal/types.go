@@ -9,6 +9,11 @@ type List struct {
 	Value []Type
 }
 
+//Vector holds a list of MalTypes
+type Vector struct {
+	Value []Type
+}
+
 //Symbol holds a symbol
 type Symbol struct {
 	Value string

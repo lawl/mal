@@ -20,6 +20,15 @@ func PrString(ast Type, readably bool) string {
 			}
 		}
 		sb.WriteString(")")
+	case *Vector:
+		sb.WriteString("[")
+		for i, vel := range v.Value {
+			sb.WriteString(printAtom(vel, readably))
+			if i < len(v.Value)-1 {
+				sb.WriteString(" ")
+			}
+		}
+		sb.WriteString("]")
 	default:
 		sb.WriteString(printAtom(v, readably))
 
@@ -36,6 +45,8 @@ func printAtom(atom Type, readably bool) string {
 		//  'f' (-ddd.dddd, no exponent)
 		return strconv.FormatFloat(v.Value, 'f', -1, 64)
 	case *List:
+		return PrString(v, readably)
+	case *Vector:
 		return PrString(v, readably)
 	case *Boolean:
 		if v.Value {

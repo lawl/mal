@@ -72,6 +72,13 @@ func readForm(reader *Reader) (Type, error) {
 			return nil, err
 		}
 		return v, nil
+	case "[":
+		reader.next()
+		v, err := readVector(reader)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
 	default:
 		v, err := readAtom(reader)
 		if err != nil {
@@ -96,6 +103,26 @@ func readList(reader *Reader) (Type, error) {
 		} else {
 			reader.next()
 			return &list, nil
+		}
+
+	}
+}
+
+func readVector(reader *Reader) (Type, error) {
+	var vector Vector
+	for {
+		peek, eof := reader.peek()
+		if peek != "]" && !eof {
+			v, err := readForm(reader)
+			if err != nil {
+				return nil, err
+			}
+			vector.Value = append(vector.Value, v)
+		} else if eof {
+			return nil, fmt.Errorf("unbalanced parenthesis")
+		} else {
+			reader.next()
+			return &vector, nil
 		}
 
 	}

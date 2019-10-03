@@ -99,16 +99,25 @@ tailcalloptimized:
 				ast = v.Value[3]
 				goto tailcalloptimized
 			case "fn*":
-				bindings, ok := v.Value[1].(*mal.List)
+				var bindings []mal.Type
+				listBindings, ok := v.Value[1].(*mal.List)
+				if ok {
+					bindings = listBindings.Value
+				}
 				if !ok {
-					return nil, fmt.Errorf("Invalid bindings to fn*")
+					vectorBindings, ok := v.Value[1].(*mal.Vector)
+					if ok {
+						bindings = vectorBindings.Value
+					} else {
+						return nil, fmt.Errorf("Invalid bindings to fn*")
+					}
 				}
 				return &mal.Function{
 					Ast:    v.Value[2],
-					Params: bindings.Value,
+					Params: bindings,
 					Env:    env,
 					Fn: func(args ...mal.Type) (mal.Type, error) {
-						fnEnv := mal.NewEnv(env, bindings.Value, args)
+						fnEnv := mal.NewEnv(env, listBindings.Value, args)
 						return eval(v.Value[2], fnEnv)
 					}}, nil
 			}
@@ -154,6 +163,16 @@ func evalAst(ast mal.Type, env *mal.Env) (mal.Type, error) {
 			list.Value = append(list.Value, evaled)
 		}
 		return &list, nil
+	case *mal.Vector:
+		var vector mal.Vector
+		for _, val := range v.Value {
+			evaled, err := eval(val, env)
+			if err != nil {
+				return nil, err
+			}
+			vector.Value = append(vector.Value, evaled)
+		}
+		return &vector, nil
 	default:
 		return ast, nil
 	}
