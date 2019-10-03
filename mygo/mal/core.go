@@ -172,6 +172,39 @@ var CoreNS = map[*Symbol]*Function{
 		}
 		return &newLst, nil
 	}},
+	&Symbol{Value: "first"}: &Function{Fn: func(args ...Type) (Type, error) {
+		lst, isList := args[0].(*List)
+		nul, isNil := args[0].(*Nil)
+
+		if !isList && isNil {
+			return nul, nil
+		}
+		if len(lst.Value) == 0 {
+			return &Nil{}, nil
+		}
+		return lst.Value[0], nil
+	}},
+
+	&Symbol{Value: "nth"}: &Function{Fn: func(args ...Type) (Type, error) {
+		lst, _ := args[0].(*List)
+		idx, _ := args[1].(*Number)
+		if idx.Value >= 0 && int(idx.Value) < len(lst.Value) {
+			return lst.Value[int(idx.Value)], nil
+		}
+		return nil, fmt.Errorf("nth: Index out of range")
+	}},
+	&Symbol{Value: "rest"}: &Function{Fn: func(args ...Type) (Type, error) {
+		lst, isList := args[0].(*List)
+		_, isNil := args[0].(*Nil)
+
+		if !isNil && isList && len(lst.Value) >= 1 {
+			l := NewList(false)
+			l.Value = lst.Value[1:]
+			return &l, nil
+		}
+		l := NewList(false)
+		return &l, nil
+	}},
 
 	/* Takes an atom, a function, and zero or more function arguments.
 	The atom's value is modified to the result of applying the function
