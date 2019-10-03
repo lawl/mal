@@ -205,6 +205,19 @@ func compareFunc(args ...Type) (Type, error) {
 			}
 		}
 		return &Boolean{Value: true}, nil
+	case *Vector:
+		v2, _ := args[1].(*Vector)
+		if len(v.Value) != len(v2.Value) {
+			return &Boolean{Value: false}, nil
+		}
+		for i := range v.Value {
+			r, _ := compareFunc(v.Value[i], v2.Value[i])
+			rbool, _ := r.(*Boolean)
+			if rbool.Value == false {
+				return &Boolean{Value: false}, nil
+			}
+		}
+		return &Boolean{Value: true}, nil
 	case *Boolean:
 		v2, _ := args[1].(*Boolean)
 		return &Boolean{Value: v.Value == v2.Value}, nil
