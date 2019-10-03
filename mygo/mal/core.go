@@ -153,6 +153,15 @@ var CoreNS = map[*Symbol]*Function{
 		v.Value = args[1]
 		return args[1], nil
 	}},
+	&Symbol{Value: "cons"}: &Function{Fn: func(args ...Type) (Type, error) {
+		v := args[0]
+		lst, _ := args[1].(*List)
+		newLst := NewList(lst.IsVector)
+		newLst.Value = append(newLst.Value, v)
+		newLst.Value = append(newLst.Value, lst.Value...)
+		return &newLst, nil
+	}},
+
 	/* Takes an atom, a function, and zero or more function arguments.
 	The atom's value is modified to the result of applying the function
 	with the atom's value as the first argument and the optionally given
