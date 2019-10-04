@@ -1,8 +1,10 @@
 package mal
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -432,6 +434,44 @@ var CoreNS = map[*Symbol]*Function{
 			valList.Value = append(valList.Value, val)
 		}
 		return &valList, nil
+	}},
+
+	&Symbol{Value: "readline"}: &Function{Fn: func(args ...Type) (Type, error) {
+		str, isString := args[0].(*String)
+		stdin := bufio.NewReader(os.Stdin)
+		if isString {
+			fmt.Print(str.Value)
+		}
+		s, err := stdin.ReadString('\n')
+		s = strings.Trim(s, "\n")
+		if err != nil {
+			return &Nil{}, nil
+		}
+		return &String{Value: s}, nil
+	}},
+	&Symbol{Value: "time-ms"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("time-ms: Not implemented")
+	}},
+	&Symbol{Value: "meta"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("meta: Not implemented")
+	}},
+	&Symbol{Value: "with-meta"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("with-meta: Not implemented")
+	}},
+	&Symbol{Value: "fn?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("fn?: Not implemented")
+	}},
+	&Symbol{Value: "string?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("string?: Not implemented")
+	}},
+	&Symbol{Value: "number?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("number?: Not implemented")
+	}},
+	&Symbol{Value: "seq"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("seq: Not implemented")
+	}},
+	&Symbol{Value: "conj"}: &Function{Fn: func(args ...Type) (Type, error) {
+		return nil, fmt.Errorf("conj: Not implemented")
 	}},
 
 	// compare the first two parameters and return true if they are the same type and
