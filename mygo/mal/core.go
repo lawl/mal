@@ -289,6 +289,150 @@ var CoreNS = map[*Symbol]*Function{
 		str, _ := args[0].(*String)
 		return &Symbol{Value: str.Value}, nil
 	}},
+	&Symbol{Value: "keyword"}: &Function{Fn: func(args ...Type) (Type, error) {
+		if kw, ok := args[0].(*Keyword); ok {
+			return kw, nil
+		}
+		str, _ := args[0].(*String)
+		return &Keyword{Value: ":" + str.Value}, nil
+	}},
+	&Symbol{Value: "keyword?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*Keyword)
+		return &Boolean{Value: ok}, nil
+	}},
+	&Symbol{Value: "vector"}: &Function{Fn: func(args ...Type) (Type, error) {
+		vec := NewList(true)
+		vec.Value = append(vec.Value, args...)
+		return &vec, nil
+	}},
+	&Symbol{Value: "vector?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		vec, ok := args[0].(*List)
+		return &Boolean{Value: ok && vec.IsVector == true}, nil
+	}},
+	&Symbol{Value: "sequential?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*List)
+		return &Boolean{Value: ok}, nil
+	}},
+	&Symbol{Value: "hash-map"}: &Function{Fn: func(args ...Type) (Type, error) {
+		if len(args)%2 != 0 {
+			return nil, fmt.Errorf("hash-map requires an even number of arguments")
+		}
+		hmap := NewHashMap()
+		for i := 0; i < len(args); i += 2 {
+			key := args[i]
+			value := args[i+1]
+			strKey, err := TypeToHashKey(key)
+			if err != nil {
+				return nil, err
+			}
+			hmap.Value[strKey] = value
+		}
+		return &hmap, nil
+	}},
+	&Symbol{Value: "map?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*HashMap)
+		return &Boolean{Value: ok}, nil
+	}},
+
+	&Symbol{Value: "assoc"}: &Function{Fn: func(args ...Type) (Type, error) {
+		toAssoc := args[1:]
+		if len(toAssoc)%2 != 0 {
+			return nil, fmt.Errorf("hash-map requires an even number of arguments")
+		}
+		originalMap, ok := args[0].(*HashMap)
+		if !ok {
+			return nil, fmt.Errorf("First argument to assoc must be a hash map")
+		}
+		hmap := NewHashMap()
+		for k, v := range originalMap.Value {
+			hmap.Value[k] = v
+		}
+		for i := 0; i < len(toAssoc); i += 2 {
+			key := toAssoc[i]
+			value := toAssoc[i+1]
+			strKey, err := TypeToHashKey(key)
+			if err != nil {
+				return nil, err
+			}
+			hmap.Value[strKey] = value
+		}
+		return &hmap, nil
+	}},
+
+	&Symbol{Value: "dissoc"}: &Function{Fn: func(args ...Type) (Type, error) {
+		toDissoc := args[1:]
+		originalMap, ok := args[0].(*HashMap)
+		if !ok {
+			return nil, fmt.Errorf("First argument to dissoc must be a hash map")
+		}
+		hmap := NewHashMap()
+	outer:
+		for k, v := range originalMap.Value {
+			for _, key := range toDissoc {
+				strKey, err := TypeToHashKey(key)
+				if err != nil {
+					return nil, err
+				}
+				if strKey == k {
+					continue outer
+				}
+			}
+			hmap.Value[k] = v
+		}
+		return &hmap, nil
+	}},
+	&Symbol{Value: "get"}: &Function{Fn: func(args ...Type) (Type, error) {
+		key := args[1]
+		hmap, ok := args[0].(*HashMap)
+		if !ok {
+			return &Nil{}, nil
+		}
+		strKey, err := TypeToHashKey(key)
+		if err != nil {
+			return nil, err
+		}
+		if val, ok := hmap.Value[strKey]; ok {
+			return val, nil
+		}
+		return &Nil{}, nil
+	}},
+	&Symbol{Value: "contains?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		key := args[1]
+		hmap, ok := args[0].(*HashMap)
+		if !ok {
+			return nil, fmt.Errorf("First argument to contains? must be a hash map")
+		}
+		strKey, err := TypeToHashKey(key)
+		if err != nil {
+			return nil, err
+		}
+		if _, ok := hmap.Value[strKey]; ok {
+			return &Boolean{Value: true}, nil
+		}
+		return &Boolean{Value: false}, nil
+	}},
+	&Symbol{Value: "keys"}: &Function{Fn: func(args ...Type) (Type, error) {
+		hmap, ok := args[0].(*HashMap)
+		if !ok {
+			return nil, fmt.Errorf("First argument to assoc must be a hash map")
+		}
+		keyList := NewList(false)
+		for k := range hmap.Value {
+			keyList.Value = append(keyList.Value, NativeStringToMalHashKey(k))
+		}
+		return &keyList, nil
+	}},
+	&Symbol{Value: "vals"}: &Function{Fn: func(args ...Type) (Type, error) {
+		hmap, ok := args[0].(*HashMap)
+		if !ok {
+			return nil, fmt.Errorf("First argument to assoc must be a hash map")
+		}
+		valList := NewList(false)
+		for _, val := range hmap.Value {
+			valList.Value = append(valList.Value, val)
+		}
+		return &valList, nil
+	}},
 
 	// compare the first two parameters and return true if they are the same type and
 	// contain the same value. In the case of equal length lists, each element of the

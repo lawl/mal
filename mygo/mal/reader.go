@@ -148,15 +148,11 @@ func readHashmap(reader *Reader) (Type, error) {
 			if err != nil {
 				return nil, err
 			}
-			if strKey, ok := key.(*String); ok {
-				hmap.Value[strKey.Value] = value
-			} else {
-				if strKey, ok := key.(*Keyword); ok {
-					hmap.Value[strKey.Value] = value
-				} else {
-					return nil, fmt.Errorf("Map keys must be of type String, got '%T' instead", key)
-				}
+			strKey, err := TypeToHashKey(key)
+			if err != nil {
+				return nil, err
 			}
+			hmap.Value[strKey] = value
 
 		} else if eof {
 			return nil, fmt.Errorf("unbalanced parenthesis in hash map, expected '}'")
