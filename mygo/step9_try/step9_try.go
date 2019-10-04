@@ -206,7 +206,10 @@ tailcalloptimized:
 			return nil, err
 		}
 		lst, _ := ev.(*mal.List)
-		fn, _ := lst.Value[0].(*mal.Function)
+		fn, isFN := lst.Value[0].(*mal.Function)
+		if !isFN {
+			return nil, fmt.Errorf("Expected function, got %T", lst.Value[0])
+		}
 		//if we have an AST (and params/env), we can TCO this function!
 		if fn.Ast != nil {
 			ast = fn.Ast

@@ -206,6 +206,46 @@ var CoreNS = map[*Symbol]*Function{
 		return &l, nil
 	}},
 
+	&Symbol{Value: "apply"}: &Function{Fn: func(args ...Type) (Type, error) {
+		fn, isFN := args[0].(*Function)
+
+		if !isFN || len(args) <= 1 {
+			return nil, fmt.Errorf("Invalid arguments to 'apply'")
+		}
+		fnArgs := make([]Type, 0)
+		for _, v := range args[1:] {
+			if asList, ok := v.(*List); ok {
+				for _, listEl := range asList.Value {
+					fnArgs = append(fnArgs, listEl)
+				}
+				continue
+			}
+			fnArgs = append(fnArgs, v)
+		}
+		return fn.Fn(fnArgs...)
+	}},
+
+	&Symbol{Value: "map"}: &Function{Fn: func(args ...Type) (Type, error) {
+		fn, isFN := args[0].(*Function)
+
+		if !isFN || len(args) <= 1 {
+			return nil, fmt.Errorf("Invalid arguments to 'map'")
+		}
+
+		rList := NewList(false)
+		if asList, ok := args[1].(*List); ok {
+			for _, listEl := range asList.Value {
+				res, err := fn.Fn(listEl)
+				if err != nil {
+					return nil, err
+				}
+				rList.Value = append(rList.Value, res)
+			}
+		}
+
+		return &rList, nil
+	}},
+
 	/* Takes an atom, a function, and zero or more function arguments.
 	The atom's value is modified to the result of applying the function
 	with the atom's value as the first argument and the optionally given
