@@ -170,6 +170,10 @@ func readAtom(reader *Reader) (Type, error) {
 		return nil, fmt.Errorf("Tried to read atom, but reached EOF")
 	}
 
+	if strings.HasPrefix(val, ";") { // comment: skip
+		return readForm(reader)
+	}
+
 	if asNumber, err := strconv.ParseFloat(val, 64); err == nil {
 		return &Number{Value: asNumber}, nil
 	}
@@ -199,10 +203,6 @@ func readAtom(reader *Reader) (Type, error) {
 			return nil, err
 		}
 		return &String{Value: s}, nil
-	}
-
-	if strings.HasPrefix(val, ";") { // comment: skip
-		return readForm(reader)
 	}
 
 	if strings.HasPrefix(val, ":") {

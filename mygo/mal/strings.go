@@ -40,7 +40,7 @@ func ReadString(s string) (string, error) {
 	writtenStringEnd := false
 
 	if !strings.HasPrefix(s, "\"") {
-		return "", fmt.Errorf("unbalanced \"")
+		return "", fmt.Errorf("unbalanced \", while parsing: %s", sr.str)
 	}
 
 	for {
@@ -74,7 +74,7 @@ func ReadString(s string) (string, error) {
 	}
 	str := sb.String()
 	if len(str) < 2 || !writtenStringEnd {
-		return "", fmt.Errorf("unbalanced \"")
+		return "", fmt.Errorf("unbalanced \", while parsing: %s", sr.str)
 	}
 	return str[1 : len(str)-1], nil
 }
