@@ -112,7 +112,10 @@ tailcalloptimized:
 				if bindings, ok := astList.Value[1].(*mal.List); ok {
 					for i := 0; i < len(bindings.Value)/2; i++ {
 						idx := (i * 2)
-						setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
+						_, err := setBindingInEnv(newEnv, bindings.Value[idx:idx+2])
+						if err != nil {
+							return nil, err
+						}
 					}
 
 					env = newEnv
