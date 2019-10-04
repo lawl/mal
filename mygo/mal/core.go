@@ -205,7 +205,10 @@ var CoreNS = map[*Symbol]*Function{
 		l := NewList(false)
 		return &l, nil
 	}},
-
+	&Symbol{Value: "throw"}: &Function{Fn: func(args ...Type) (Type, error) {
+		errStr, _ := args[0].(*String)
+		return nil, fmt.Errorf(errStr.Value)
+	}},
 	&Symbol{Value: "apply"}: &Function{Fn: func(args ...Type) (Type, error) {
 		fn, isFN := args[0].(*Function)
 
@@ -265,6 +268,22 @@ var CoreNS = map[*Symbol]*Function{
 		}
 		v.Value = r
 		return r, nil
+	}},
+	&Symbol{Value: "nil?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*Nil)
+		return &Boolean{Value: ok}, nil
+	}},
+	&Symbol{Value: "true?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		b, ok := args[0].(*Boolean)
+		return &Boolean{Value: ok && b.Value}, nil
+	}},
+	&Symbol{Value: "false?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		b, ok := args[0].(*Boolean)
+		return &Boolean{Value: ok && !b.Value}, nil
+	}},
+	&Symbol{Value: "symbol?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		_, ok := args[0].(*Symbol)
+		return &Boolean{Value: ok}, nil
 	}},
 
 	// compare the first two parameters and return true if they are the same type and
