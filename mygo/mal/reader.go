@@ -193,14 +193,11 @@ func readAtom(reader *Reader) (Type, error) {
 		return readerMacroExpand(reader, "quasiquote")
 	}
 
-	if strings.HasPrefix(val, "\"") {
-
-		if !strings.HasSuffix(val, "\"") {
-			return nil, fmt.Errorf("unbalanced quotes in string")
+	if strings.Contains(val, "\"") {
+		s, err := ReadString(val)
+		if err != nil {
+			return nil, err
 		}
-
-		s := val[1 : len(val)-1]
-		s = StringUnescape(s)
 		return &String{Value: s}, nil
 	}
 

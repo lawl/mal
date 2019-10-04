@@ -76,8 +76,7 @@ func printAtom(atom Type, readably bool) string {
 	case *String:
 		s := v.Value
 		if readably {
-			s = StringEscape(s)
-			s = "\"" + s + "\""
+			s = WriteString(s)
 		}
 		return s
 	case *Atom:

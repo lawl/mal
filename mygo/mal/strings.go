@@ -1,6 +1,7 @@
 package mal
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -32,10 +33,15 @@ func NewStringReader(str string) *StringReader {
 	return &r
 }
 
-//StringUnescape parses escape sequences in strings such as \n and returns a new string
-func StringUnescape(s string) string {
+//ReadString parses escape sequences in strings such as \n and returns a new string
+func ReadString(s string) (string, error) {
 	var sb strings.Builder
 	sr := NewStringReader(s)
+	writtenStringEnd := false
+
+	if !strings.HasPrefix(s, "\"") {
+		return "", fmt.Errorf("unbalanced \"")
+	}
 
 	for {
 		v, eof := sr.next()
@@ -46,8 +52,7 @@ func StringUnescape(s string) string {
 		if v == '\\' {
 			p, eof := sr.peek()
 			if eof {
-				sb.WriteByte(v)
-				break
+				return "", fmt.Errorf("expected escape sequence after \\, eof found instead. unbalanced string")
 			}
 			switch p {
 			case 'n':
@@ -61,14 +66,21 @@ func StringUnescape(s string) string {
 				sb.WriteByte('\\')
 			}
 		} else {
+			if _, eof := sr.peek(); eof && v == '"' {
+				writtenStringEnd = true
+			}
 			sb.WriteByte(v)
 		}
 	}
-	return sb.String()
+	str := sb.String()
+	if len(str) < 2 || !writtenStringEnd {
+		return "", fmt.Errorf("unbalanced \"")
+	}
+	return str[1 : len(str)-1], nil
 }
 
-//StringEscape parses special characters such as newlines and escapes them
-func StringEscape(s string) string {
+//WriteString parses special characters such as newlines and escapes them
+func WriteString(s string) string {
 	var sb strings.Builder
 	sr := NewStringReader(s)
 
@@ -90,5 +102,5 @@ func StringEscape(s string) string {
 		}
 
 	}
-	return sb.String()
+	return "\"" + sb.String() + "\""
 }
