@@ -32,7 +32,11 @@ func PrString(ast Type, readably bool) string {
 		sb.WriteString("{")
 		i := 0
 		for key, vel := range v.Value {
-			sb.WriteString(printAtom(&String{Value: key}, readably))
+			if strings.HasPrefix(key, ":") {
+				sb.WriteString(printAtom(&Keyword{Value: key}, readably))
+			} else {
+				sb.WriteString(printAtom(&String{Value: key}, readably))
+			}
 			sb.WriteString(" ")
 			sb.WriteString(printAtom(vel, readably))
 			if i < len(v.Value)-1 {
@@ -82,6 +86,8 @@ func printAtom(atom Type, readably bool) string {
 		sb.WriteString(printAtom(v.Value, readably))
 		sb.WriteString(")")
 		return sb.String()
+	case *Keyword:
+		return v.Value
 
 	default:
 		return fmt.Sprintf("<No print implementation for atom type: %T>", atom)

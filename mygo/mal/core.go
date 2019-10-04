@@ -285,6 +285,10 @@ var CoreNS = map[*Symbol]*Function{
 		_, ok := args[0].(*Symbol)
 		return &Boolean{Value: ok}, nil
 	}},
+	&Symbol{Value: "symbol"}: &Function{Fn: func(args ...Type) (Type, error) {
+		str, _ := args[0].(*String)
+		return &Symbol{Value: str.Value}, nil
+	}},
 
 	// compare the first two parameters and return true if they are the same type and
 	// contain the same value. In the case of equal length lists, each element of the
@@ -349,6 +353,9 @@ func compareFunc(args ...Type) (Type, error) {
 		return &Boolean{Value: false}, nil // Go cant == functions, false seems to make the most sense
 	case *String:
 		v2, _ := args[1].(*String)
+		return &Boolean{Value: v.Value == v2.Value}, nil
+	case *Keyword:
+		v2, _ := args[1].(*Keyword)
 		return &Boolean{Value: v.Value == v2.Value}, nil
 	case *Atom:
 		v2, _ := args[1].(*Atom)

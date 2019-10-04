@@ -62,6 +62,11 @@ type String struct {
 	Value string
 }
 
+//Keyword holds, a keyword
+type Keyword struct {
+	Value string
+}
+
 //Atom holds a reference to a mal value
 type Atom struct {
 	Value Type

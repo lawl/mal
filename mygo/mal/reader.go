@@ -151,7 +151,11 @@ func readHashmap(reader *Reader) (Type, error) {
 			if strKey, ok := key.(*String); ok {
 				hmap.Value[strKey.Value] = value
 			} else {
-				return nil, fmt.Errorf("Map keys must be of type String, got '%T' instead", key)
+				if strKey, ok := key.(*Keyword); ok {
+					hmap.Value[strKey.Value] = value
+				} else {
+					return nil, fmt.Errorf("Map keys must be of type String, got '%T' instead", key)
+				}
 			}
 
 		} else if eof {
@@ -206,6 +210,10 @@ func readAtom(reader *Reader) (Type, error) {
 
 	if strings.HasPrefix(val, ";") { // comment: skip
 		return readForm(reader)
+	}
+
+	if strings.HasPrefix(val, ":") {
+		return &Keyword{Value: val}, nil
 	}
 
 	return &Symbol{Value: val}, nil
