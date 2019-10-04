@@ -206,8 +206,8 @@ var CoreNS = map[*Symbol]*Function{
 		return &l, nil
 	}},
 	&Symbol{Value: "throw"}: &Function{Fn: func(args ...Type) (Type, error) {
-		errStr, _ := args[0].(*String)
-		return nil, fmt.Errorf(errStr.Value)
+		err := Error{Value: args[0]}
+		return nil, &err
 	}},
 	&Symbol{Value: "apply"}: &Function{Fn: func(args ...Type) (Type, error) {
 		fn, isFN := args[0].(*Function)

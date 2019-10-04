@@ -71,3 +71,12 @@ type Keyword struct {
 type Atom struct {
 	Value Type
 }
+
+//Error holds an Error
+type Error struct {
+	Value Type
+}
+
+func (err *Error) Error() string {
+	return "Error: " + PrString(err.Value, true)
+}

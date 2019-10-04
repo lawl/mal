@@ -184,21 +184,25 @@ tailcalloptimized:
 				return macroExpand(astList.Value[1], env)
 			case "try*":
 				r, err := eval(astList.Value[1], env)
-				if err != nil {
-					catchBlock, _ := astList.Value[2].(*mal.List)
+				if err != nil && len(astList.Value) >= 3 {
+					catchBlock, ok := astList.Value[2].(*mal.List)
+					if !ok {
+						return r, err
+					}
 					if symb, ok := catchBlock.Value[0].(*mal.Symbol); ok && symb.Value == "catch*" {
 						bind, _ := catchBlock.Value[1].(*mal.Symbol)
 						exEnv := mal.NewEnv(env, nil, nil)
-						exEnv.Set(bind, &mal.String{Value: err.Error()})
+						if malErr, ok := err.(*mal.Error); ok {
+							exEnv.Set(bind, malErr.Value)
+						} else {
+							exEnv.Set(bind, &mal.String{Value: err.Error()})
+						}
 						ast = catchBlock.Value[2]
 						env = exEnv
 						goto tailcalloptimized
 					}
 				}
 				return r, err
-			case "throw":
-				errStr, _ := astList.Value[1].(*mal.String)
-				return nil, fmt.Errorf(errStr.Value)
 			}
 		}
 		ev, err := evalAst(astList, env)
