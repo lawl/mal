@@ -62,11 +62,6 @@ func macroExpand(ast mal.Type, env *mal.Env) (mal.Type, error) {
 	return ast, nil
 }
 
-type tryCatchInfo struct {
-	errMsg  *mal.String
-	isError bool
-}
-
 func eval(ast mal.Type, env *mal.Env) (mal.Type, error) {
 tailcalloptimized:
 	switch astList := ast.(type) {
