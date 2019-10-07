@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 )
 
 //CoreNS contains builtin functions for mal
@@ -450,28 +451,124 @@ var CoreNS = map[*Symbol]*Function{
 		return &String{Value: s}, nil
 	}},
 	&Symbol{Value: "time-ms"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("time-ms: Not implemented")
-	}},
-	&Symbol{Value: "meta"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("meta: Not implemented")
-	}},
-	&Symbol{Value: "with-meta"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("with-meta: Not implemented")
+		t := time.Now().UnixNano() / time.Millisecond.Milliseconds()
+		return &Number{Value: float64(t)}, nil
 	}},
 	&Symbol{Value: "fn?"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("fn?: Not implemented")
+		fn, ok := args[0].(*Function)
+		return &Boolean{Value: ok && !fn.IsMacro}, nil
+	}},
+
+	&Symbol{Value: "macro?"}: &Function{Fn: func(args ...Type) (Type, error) {
+		fn, ok := args[0].(*Function)
+		return &Boolean{Value: ok && fn.IsMacro}, nil
 	}},
 	&Symbol{Value: "string?"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("string?: Not implemented")
+		_, ok := args[0].(*String)
+		return &Boolean{Value: ok}, nil
 	}},
 	&Symbol{Value: "number?"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("number?: Not implemented")
+		_, ok := args[0].(*Number)
+		return &Boolean{Value: ok}, nil
 	}},
 	&Symbol{Value: "seq"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("seq: Not implemented")
+		if list, ok := args[0].(*List); ok {
+			if len(list.Value) == 0 {
+				return &Nil{}, nil
+			}
+			if list.IsVector {
+				newList := NewList(false)
+				newList.Value = list.Value
+				return &newList, nil
+			}
+			return list, nil
+		}
+		if str, ok := args[0].(*String); ok {
+			if len(str.Value) == 0 {
+				return &Nil{}, nil
+			}
+			newList := NewList(false)
+			sList := strings.Split(str.Value, "")
+			for _, val := range sList {
+				newList.Value = append(newList.Value, &String{Value: val})
+			}
+			return &newList, nil
+		}
+		if nul, ok := args[0].(*Nil); ok {
+			return nul, nil
+		}
+		return nil, fmt.Errorf("seq: Argument 1 must be of type vector, list or string")
 	}},
 	&Symbol{Value: "conj"}: &Function{Fn: func(args ...Type) (Type, error) {
-		return nil, fmt.Errorf("conj: Not implemented")
+		if list, ok := args[0].(*List); ok {
+			newList := NewList(list.IsVector)
+			els := args[1:]
+			if !list.IsVector {
+				for i := len(els) - 1; i >= 0; i-- {
+					newList.Value = append(newList.Value, els[i])
+				}
+				newList.Value = append(newList.Value, list.Value...)
+				return &newList, nil
+			}
+			newList.Value = append(newList.Value, list.Value...)
+			for _, el := range els {
+				newList.Value = append(newList.Value, el)
+			}
+			return &newList, nil
+		}
+		return nil, fmt.Errorf("conj: Argument 1 must be of type vector, or list")
+	}},
+	&Symbol{Value: "meta"}: &Function{Fn: func(args ...Type) (Type, error) {
+		if hmap, ok := args[0].(*HashMap); ok {
+			if hmap.Meta == nil {
+				return &Nil{}, nil
+			}
+			return hmap.Meta, nil
+		}
+		if list, ok := args[0].(*List); ok {
+			if list.Meta == nil {
+				return &Nil{}, nil
+			}
+			return list.Meta, nil
+		}
+		if atom, ok := args[0].(*Atom); ok {
+			if atom.Meta == nil {
+				return &Nil{}, nil
+			}
+			return atom.Meta, nil
+		}
+		if fn, ok := args[0].(*Function); ok {
+			if fn.Meta == nil {
+				return &Nil{}, nil
+			}
+			return fn.Meta, nil
+		}
+		return nil, fmt.Errorf("meta: Cannot retrieve metadata to non composite or function type %T", args[0])
+	}},
+	&Symbol{Value: "with-meta"}: &Function{Fn: func(args ...Type) (Type, error) {
+		if hmap, ok := args[0].(*HashMap); ok {
+			newmap := NewHashMap()
+			newmap.Value = hmap.Value
+			newmap.Meta = args[1]
+			return &newmap, nil
+		}
+		if list, ok := args[0].(*List); ok {
+			newList := NewList(list.IsVector)
+			newList.Value = list.Value
+			newList.Meta = args[1]
+			return &newList, nil
+		}
+		if atom, ok := args[0].(*Atom); ok {
+			newAtom := Atom{Value: atom.Value}
+			newAtom.Meta = args[1]
+			return &newAtom, nil
+		}
+		if fn, ok := args[0].(*Function); ok {
+			newFn := CopyOfFunction(fn)
+			newFn.Meta = args[1]
+			return newFn, nil
+		}
+		return nil, fmt.Errorf("with-meta: Cannot add metadata to non composite or function type %T", args[0])
 	}},
 
 	// compare the first two parameters and return true if they are the same type and

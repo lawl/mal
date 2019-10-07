@@ -8,6 +8,7 @@ type Type interface {
 type List struct {
 	Value    []Type
 	IsVector bool
+	Meta     Type
 }
 
 //NewList creates a list or vector
@@ -20,6 +21,7 @@ func NewList(isVector bool) List {
 //HashMap holds mappings from string -> MalType
 type HashMap struct {
 	Value map[string]Type
+	Meta  Type
 }
 
 //NewHashMap creates a new HashMap
@@ -46,6 +48,7 @@ type Function struct {
 	Env     *Env
 	IsMacro bool
 	Fn      func(args ...Type) (Type, error)
+	Meta    Type
 }
 
 //Boolean holds a boolean
@@ -70,6 +73,7 @@ type Keyword struct {
 //Atom holds a reference to a mal value
 type Atom struct {
 	Value Type
+	Meta  Type
 }
 
 //Error holds an Error

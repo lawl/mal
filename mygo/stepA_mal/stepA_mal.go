@@ -98,10 +98,11 @@ tailcalloptimized:
 					return nil, err
 				}
 				if fn, ok := evaledFunction.(*mal.Function); ok {
-					fn.IsMacro = true
+					newFn := mal.CopyOfFunction(fn)
+					newFn.IsMacro = true
 					symb, _ := astList.Value[1].(*mal.Symbol)
-					env.Set(symb, fn)
-					return fn, nil
+					env.Set(symb, newFn)
+					return newFn, nil
 				}
 				return nil, fmt.Errorf("Argument 2 to defmacro! must be a function")
 			case "let*":

@@ -26,3 +26,14 @@ func NativeStringToMalHashKey(str string) Type {
 	}
 	return &String{Value: str}
 }
+
+//CopyOfFunction creates and returns a copy of a mal function
+func CopyOfFunction(fn *Function) *Function {
+	newFn := Function{}
+	newFn.Ast = fn.Ast
+	newFn.Params = fn.Params
+	newFn.Env = fn.Env
+	newFn.IsMacro = fn.IsMacro
+	newFn.Fn = fn.Fn
+	return &newFn
+}

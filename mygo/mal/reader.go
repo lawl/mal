@@ -195,6 +195,21 @@ func readAtom(reader *Reader) (Type, error) {
 		return readerMacroExpand(reader, "splice-unquote")
 	case "`":
 		return readerMacroExpand(reader, "quasiquote")
+	case "^":
+		list := NewList(false)
+		list.Value = append(list.Value, &Symbol{Value: "with-meta"})
+		v1, err := readForm(reader)
+		if err != nil {
+			return nil, err
+		}
+		v2, err := readForm(reader)
+		if err != nil {
+			return nil, err
+		}
+		//append the next two forms in reverse order
+		list.Value = append(list.Value, v2)
+		list.Value = append(list.Value, v1)
+		return &list, nil
 	}
 
 	if strings.Contains(val, "\"") {
